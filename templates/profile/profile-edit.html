@@ -337,10 +337,17 @@
                       </div>
                   </div>
                   <div class="iq-search-bar device-search">
-                      <form action="#" class="searchbox">
-                          <a class="search-link" href="#"><i class="ri-search-line"></i></a>
-                          <input type="text" class="text search-input" placeholder="Search here...">
-                      </form>
+                    <form action="/search" method="GET" class="searchbox">
+                      <a class="search-link" href="#"
+                        ><i class="ri-search-line"></i
+                      ></a>
+                      <input
+                        type="text"
+                        name="q"
+                        class="text search-input"
+                        placeholder="Search here..."
+                      />
+                    </form>
                   </div>
                   <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                       data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -596,7 +603,7 @@
                                 </li>
                            <li class="nav-item dropdown">
                               <a href="#" class="   d-flex align-items-center dropdown-toggle" id="drop-down-arrow" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  <img src="static/assets/images/user/1.jpg" class="img-fluid rounded-circle me-3" alt="user">
+                                  <img src="{{ user.profile_picture or url_for('static', filename='assets/images/user/11.png') }}" class="img-fluid rounded-circle me-3" alt="user">
                                   <div class="caption">
                                       <h6 class="mb-0 line-height">{{ full_name }}</h6>
                                   </div>

@@ -137,12 +137,13 @@
               </div>
             </div>
             <div class="iq-search-bar device-search">
-              <form action="#" class="searchbox">
+              <form action="/search" method="GET" class="searchbox">
                 <a class="search-link" href="#"
                   ><i class="ri-search-line"></i
                 ></a>
                 <input
                   type="text"
+                  name="q"
                   class="text search-input"
                   placeholder="Search here..."
                 />
@@ -189,6 +190,7 @@
                         <small class="badge bg-light text-dark">4</small>
                       </div>
                       <div class="card-body p-0">
+                        {% for req in req %}
                         <div class="iq-friend-request">
                           <div
                             class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
@@ -196,120 +198,51 @@
                             <div class="d-flex align-items-center">
                               <img
                                 class="avatar-40 rounded"
-                                src="static/assets/images/user/01.jpg"
+                                src="{{ req.sender_data.profile_picture or url_for('static', filename='assets/images/user/01.jpg') }}"
                                 alt=""
                               />
                               <div class="ms-3">
-                                <h6 class="mb-0">Jaques Amole</h6>
-                                <p class="mb-0">40 friends</p>
+                                <h6 class="mb-0">
+                                  {{ req.sender_data.full_name }}
+                                </h6>
+                                <p class="mb-0">100 friends</p>
                               </div>
                             </div>
                             <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
+                              <form
+                                action="{{ url_for('accept_friend') }}"
+                                method="post"
+                                class="me-3"
                               >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
+                                <input
+                                  type="hidden"
+                                  name="sender_id"
+                                  value="{{ req.sender_data._id }}"
+                                />
+                                <button
+                                  type="submit"
+                                  class="btn btn-primary rounded"
+                                >
+                                  Confirm
+                                </button>
+                              </form>
+                              <form action="" method="post">
+                                <input
+                                  type="hidden"
+                                  name="sender_id"
+                                  value="{{ req.sender_data._id }}"
+                                />
+                                <button
+                                  type="submit"
+                                  class="btn btn-secondary rounded"
+                                >
+                                  Delete Request
+                                </button>
+                              </form>
                             </div>
                           </div>
                         </div>
-                        <div class="iq-friend-request">
-                          <div
-                            class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
-                          >
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="static/assets/images/user/02.jpg"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">Lucy Tania</h6>
-                                <p class="mb-0">12 friends</p>
-                              </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
-                              >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="iq-friend-request">
-                          <div
-                            class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
-                          >
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="static/assets/images/user/03.jpg"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">Manny Petty</h6>
-                                <p class="mb-0">3 friends</p>
-                              </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
-                              >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="iq-friend-request">
-                          <div
-                            class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between"
-                          >
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="static/assets/images/user/04.jpg"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">Marsha Mello</h6>
-                                <p class="mb-0">15 friends</p>
-                              </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-primary rounded"
-                                >Confirm</a
-                              >
-                              <a
-                                href="javascript:void();"
-                                class="me-3 btn btn-secondary rounded"
-                                >Delete Request</a
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="text-center">
-                          <a href="#" class="btn text-primary"
-                            >View More Request</a
-                          >
-                        </div>
+                        {% endfor %}
                       </div>
                     </div>
                   </div>
@@ -691,7 +624,17 @@
                         {% endif %}
                       </div>
                     </a>
+                    {% if person.status == "accepted" %}
+                    <button class="btn btn-sm btn-light text-black" disabled>
+                      Kirim pesan
+                    </button>
+                    {% elif person.status == "pending" %}
+                    <button class="btn btn-sm btn-secondary" disabled>
+                      Menunggu konfirmasi
+                    </button>
+                    {% else %}
                     <button class="btn btn-sm btn-primary">Tambah teman</button>
+                    {% endif %}
                   </div>
                   {% endfor %}
 

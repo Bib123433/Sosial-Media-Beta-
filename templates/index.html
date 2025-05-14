@@ -121,6 +121,29 @@
         font-weight: bold;
         line-height: 1;
       }
+      .iq-profile-avatar {
+  position: relative;
+  display: inline-block;
+}
+
+/* dot default (offline) */
+.iq-profile-avatar::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #ccc;      /* abu untuk offline */
+  border: 2px solid white;
+}
+
+/* dot hijau untuk online */
+.iq-profile-avatar.status-online::after {
+  background-color: #4caf50;
+}
+
     </style>
   </head>
   <body class="  ">
@@ -1031,136 +1054,8 @@
           <div class="card shadow-none">
             <div class="card-body p-0">
               <div class="media-height p-3" data-scrollbar="init">
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-online">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/01.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Anna Sthesia</h6>
-                    <p class="mb-0">Just Now</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-online">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/02.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Paul Molive</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-online">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/03.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Anna Mull</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-online">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/04.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Paige Turner</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-online">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/11.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Bob Frapples</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-online">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/02.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Barb Ackue</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-online">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/03.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Greta Life</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-away">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/12.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Ira Membrit</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                  <div class="iq-profile-avatar status-away">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/01.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Pete Sariya</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center">
-                  <div class="iq-profile-avatar">
-                    <img
-                      class="rounded-circle avatar-50"
-                      src="static/assets/images/user/02.jpg"
-                      alt=""
-                    />
-                  </div>
-                  <div class="ms-3">
-                    <h6 class="mb-0">Monty Carlo</h6>
-                    <p class="mb-0">Admin</p>
-                  </div>
-                </div>
+                
+              
               </div>
               <div class="right-sidebar-toggle bg-primary text-white mt-3">
                 <i class="ri-arrow-left-line side-left-icon"></i>
@@ -2147,6 +2042,67 @@
         </div>
       </div>
     </div>
+
+    <div id="chat-box" class="card shadow border flex-column"
+    style="width: 360px; height: 480px; position: fixed; top:200px; bottom: 20px; right: 90px; z-index: 1050; display: none;">
+
+
+ <!-- Header -->
+ <div class="d-flex justify-content-between align-items-center border-bottom px-3 py-2 bg-white">
+  <div class="d-flex align-items-center gap-2">
+    <img src="{{ url_for('static', filename=image_path) }}"
+         class="rounded-circle" width="32" height="32" alt="Foto">
+    <span class="fw-bold text-dark">{{ user.full_name }}</span>
+  </div>
+  <div class="d-flex align-items-center gap-2 text-primary">
+    <button class="btn btn-sm p-0"><i class="fas fa-phone-alt"></i></button>
+    <button class="btn btn-sm p-0"><i class="fas fa-video"></i></button>
+    <button class="btn btn-sm p-0"><i class="fas fa-minus"></i></button>
+    <button class="btn btn-sm p-0" onclick="closeChat()"><i class="fas fa-times"></i></button>
+  </div>  
+</div>
+
+
+ <!-- Body -->
+ <div class="text-center bg-white flex-grow-1 py-4 px-3 overflow-auto" id="chat-messages">
+   <img src="{{ url_for('static', filename=image_path) }}" alt="Profile"
+        class="rounded-circle mb-2" width="80" height="80">
+   <div class="fw-bold text-dark" style="font-size: 14px;">{{ user.full_name }}</div>
+ </div>
+
+ <!-- Footer -->
+ <div class="border-top bg-white px-2 py-1">
+  <div class="d-flex align-items-center">
+    <button class="btn btn-link text-primary p-0 me-1" title="Mic"><i class="fas fa-microphone fa-lg"></i></button>
+    <button class="btn btn-link text-primary p-0 me-1" title="Photo"><i class="far fa-image fa-lg"></i></button>
+    <button class="btn btn-link text-primary p-0 me-1" title="Sticker"><i class="fas fa-sticky-note fa-lg"></i></button>
+    <button class="btn btn-link text-primary p-0 me-1" title="GIF"><i class="fas fa-file-video fa-lg"></i></button>
+
+    <input type="text" id="chat-input" class="form-control form-control-sm mx-2 rounded-pill" placeholder="Aa" oninput="toggleSendButton()">
+
+    <button class="btn btn-link text-primary p-0 me-1" title="Emoji"><i class="far fa-smile fa-lg"></i></button>
+    <input type="hidden" id="receiver-id" value="{{ user._id }}">
+    <input type="hidden" id="sender-id" value="{{ session.get('user_id') }}">
+    
+    
+    <!-- Tombol Like -->
+    <button id="like-button" class="btn btn-link text-primary p-0" title="Like">
+      <i class="fas fa-thumbs-up fa-lg"></i>
+    </button>
+
+    <!-- Tombol Kirim -->
+    <button id="send-button" class="btn btn-link text-primary p-0 d-none" title="Send">
+      <i class="fas fa-paper-plane fa-lg"></i>
+    </button>
+  </div>
+</div>
+
+
+ <!-- Status -->
+ <div class="text-center text-muted small py-1 px-2">
+   Sekarang Anda berteman dengan {{ user.full_name }}
+ </div>
+</div>
     <!-- Wrapper End-->
     <footer class="iq-footer bg-white">
       <div class="container-fluid">
@@ -2186,8 +2142,118 @@
     <script src="static/assets/js/app.js"></script>
     <script src="static/vendor/vanillajs-datepicker/dist/js/datepicker.min.js"></script>
     <script src="static/assets/js/lottie.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+
 
     <script>
+    const friendList = {{ friend_list_data | tojson }};
+
+  // 2) Utility untuk (re)render daftar teman dengan status dot & label
+  function renderFriends(onlineIds) {
+    const container = document.querySelector(".media-height");
+    container.innerHTML = "";
+
+    friendList.forEach(f => {
+      // cek apakah f._id ada di onlineIds
+      const isOnline   = onlineIds.includes(f._id);
+      const dotClass   = isOnline ? "status-online" : "";       // default offline pakai dot abu
+      const statusText = isOnline ? "Online" : "Offline";
+
+      const html = `
+        <div class="d-flex align-items-center mb-4">
+          <div class="iq-profile-avatar ${dotClass}">
+            <img class="rounded-circle avatar-50"
+                 src="${f.profile_picture}"
+                 alt="${f.full_name}" />
+          </div>
+          <div class="ms-3">
+            <h6 class="mb-0">${f.full_name}</h6>
+            <p class="mb-0">${statusText}</p>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML("beforeend", html);
+    });
+  }
+
+  // 3) inisialisasi: semua teman offline
+  renderFriends([]);
+
+  // 4) koneksi Socket.IO
+  const socket = io({
+    auth: {
+      user_id:   "{{ session.get('user_id') }}",
+      full_name: "{{ session.get('full_name') }}"
+    }
+  });
+
+  socket.on("connect", () => {
+    socket.emit("request_online_users");
+  });
+
+  socket.on("online_users", users => {
+    // server kirim array {user_id, full_name, profile_picture}
+    const onlineIds = users.map(u => u.user_id);
+    renderFriends(onlineIds);
+  });
+
+  // opsional: live update saat user connect/disconnect
+  socket.on("user_connected",   () => socket.emit("request_online_users"));
+  socket.on("user_disconnected",() => socket.emit("request_online_users"));
+
+  // Menerima pesan dari server
+  socket.on("new_message", (data) => {
+    console.log("📩 Dapat pesan:", data);
+    const receiverId = document.getElementById("receiver-id").value;
+
+    // Jika chat belum terbuka, bisa dibuka otomatis
+    if (receiverId !== data.sender_id) {
+      openChat(data.sender_id); // Pastikan fungsi ini ada
+    }
+
+    const chatBody = document.querySelector("#chat-box .flex-grow-1");
+    const messageElement = document.createElement("div");
+
+    const isOwnMessage = data.sender_id === document.getElementById("sender-id").value;
+    messageElement.classList.add(isOwnMessage ? "text-end" : "text-start", "mb-2");
+
+    messageElement.innerHTML = `
+      <span class="badge ${isOwnMessage ? "bg-primary" : "bg-secondary"}" style="padding: 10px 20px;
+                                                border-radius: 20px;
+                                                max-width: 70%;
+                                                font-size: 14px;">${data.message}</span>
+    `;
+    chatBody.appendChild(messageElement);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  });
+  function openChat() {
+    const chatBox = document.getElementById('chat-box');
+    chatBox.style.display = 'flex';
+    chatBox.classList.remove('chat-pop'); // Reset animasi kalau dibuka lagi
+    void chatBox.offsetWidth; // Trigger reflow untuk restart animasi
+    chatBox.classList.add('chat-pop');
+  }
+
+  function closeChat() {
+    const chatBox = document.getElementById('chat-box');
+    chatBox.style.display = 'none';
+    chatBox.classList.remove('chat-pop');
+  }
+   function toggleSendButton() {
+    const input = document.getElementById("chat-input");
+    const likeButton = document.getElementById("like-button");
+    const sendButton = document.getElementById("send-button");
+
+    if (input.value.trim() !== "") {
+      likeButton.classList.add("d-none");
+      sendButton.classList.remove("d-none");
+    } else {
+      likeButton.classList.remove("d-none");
+      sendButton.classList.add("d-none");
+    }
+  }
+
       function reactToPost(postId, reaction) {
         fetch(`/react/${postId}`, {
           method: "POST",
@@ -2219,6 +2285,8 @@
       window.addEventListener("load", function () {
         document.getElementById("loading").style.display = "none";
       });
+
+
     </script>
 
     <!-- offcanvas start -->
