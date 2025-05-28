@@ -1,0 +1,244 @@
+<div
+  id="chat-box"
+  class="card shadow border flex-column"
+  style="
+    width: 360px;
+    height: 480px;
+    position: fixed;
+    top: 200px;
+    bottom: 20px;
+    right: 90px;
+    z-index: 1050;
+    display: none;
+  "
+>
+  <!-- Header -->
+  <div
+    class="d-flex justify-content-between align-items-center border-bottom px-3 py-2 bg-white"
+  >
+    <div class="d-flex align-items-center gap-2">
+      <img
+        src=""
+        class="rounded-circle"
+        width="32"
+        id="chat-profile-picture1"
+        height="32"
+        alt="Foto"
+      />
+      <span class="fw-bold text-dark" id="chat-profile-name1"></span>
+    </div>
+    <div class="d-flex align-items-center gap-2 text-primary">
+      <button class="btn btn-sm p-0">
+        <i class="fas fa-phone-alt"></i>
+      </button>
+      <button class="btn btn-sm p-0"><i class="fas fa-video"></i></button>
+      <button class="btn btn-sm p-0"><i class="fas fa-minus"></i></button>
+      <button class="btn btn-sm p-0" onclick="closeChat()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div
+    class="text-center bg-white flex-grow-1 py-4 px-3 overflow-auto"
+    id="chat-messages"
+  >
+    <img
+      src=""
+      alt="Profile"
+      id="chat-profile-picture"
+      class="rounded-circle mb-2"
+      width="80"
+      height="80"
+    />
+    <div
+      class="fw-bold text-dark w"
+      style="font-size: 14px"
+      id="chat-profile-name"
+    >
+      {{ user.full_name }}
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="border-top bg-white px-2 py-1">
+    <div
+      id="image-preview-container"
+      class="d-flex align-items-center px-2 mt-2"
+      style="display: none"
+    >
+      <div style="position: relative; display: inline-block">
+        <img
+          id="image-preview"
+          src=""
+          alt="Preview"
+          style="
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+          "
+        />
+        <button
+          onclick="removeImage()"
+          style="
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            text-align: center;
+            line-height: 18px;
+            padding: 0;
+          "
+        >
+          ×
+        </button>
+      </div>
+    </div>
+    <div class="d-flex align-items-center">
+      <button class="btn btn-link text-primary p-0 me-1" title="Mic">
+        <i class="fas fa-microphone fa-lg"></i>
+      </button>
+      <!-- Tombol tetap sama, tapi dibungkus label -->
+      <label
+        for="photo-upload"
+        class="btn btn-link text-primary p-0 me-1"
+        title="Photo"
+        style="cursor: pointer"
+      >
+        <i class="far fa-image fa-lg"></i>
+      </label>
+
+      <!-- Input file disembunyikan -->
+      <input
+        type="file"
+        id="photo-upload"
+        accept="image/*"
+        multiple
+        style="display: none"
+      />
+      <button class="btn btn-link text-primary p-0 me-1" title="Sticker">
+        <i class="fas fa-sticky-note fa-lg"></i>
+      </button>
+      <button
+        class="btn btn-link text-primary p-0 me-1"
+        title="GIF"
+        id="gif-toggle-btn"
+      >
+        <i class="bi bi-filetype-gif"></i>
+      </button>
+
+      <input
+        type="text"
+        id="chat-input"
+        class="form-control form-control-sm mx-2 rounded-pill"
+        placeholder="Aa"
+        oninput="toggleSendButton()"
+      />
+
+      <button class="btn btn-link text-primary p-0 me-1" title="Emoji">
+        <i class="far fa-smile fa-lg"></i>
+      </button>
+      <!-- di dalam #chat-box -->
+      <emoji-picker
+        id="emoji-picker"
+        style="
+          position: absolute;
+          bottom: 60px;
+          right: 20px;
+          display: none;
+          z-index: 2000;
+        "
+      ></emoji-picker>
+      <div
+        id="gif-container"
+        style="
+          position: absolute;
+          bottom: 60px;
+          right: 80px;
+          display: none;
+          z-index: 2000;
+          background: white;
+          border: 1px solid #ccc;
+          padding: 10px;
+          border-radius: 8px;
+        "
+      >
+        <input
+          type="text"
+          id="gif-search"
+          placeholder="Cari GIF..."
+          class="form-control mb-2"
+        />
+        <div id="gif-results" style="max-height: 200px; overflow-y: auto"></div>
+      </div>
+
+      <input type="hidden" id="receiver-id" value="{{ user._id }}" />
+      <input
+        type="hidden"
+        id="sender-id"
+        value="{{ session.get('user_id') }}"
+      />
+
+      <!-- Tombol Like -->
+      <button
+        id="like-button"
+        class="btn btn-link text-primary p-0"
+        title="Like"
+      >
+        <i class="fas fa-thumbs-up fa-lg"></i>
+      </button>
+
+      <!-- Tombol Kirim -->
+      <button
+        id="send-button"
+        class="btn btn-link text-primary p-0 d-none"
+        title="Send"
+      >
+        <i class="fas fa-paper-plane fa-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="text-center text-muted small py-1 px-2" id="chat-profile-name">
+    Sekarang Anda berteman dengan {{ user.full_name }}
+  </div>
+</div>
+<!-- Preview Gambar -->
+
+<script>
+  const fileInput = document.getElementById("photo-upload");
+  const previewContainer = document.getElementById("image-preview-container");
+  const previewImage = document.getElementById("image-preview");
+
+  fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+
+      reader.addEventListener("load", function () {
+        previewImage.src = reader.result;
+        previewImage.style.display = "block"; // Tampilkan hanya saat ada gambar
+        previewContainer.style.display = "flex"; // Tampilkan container
+      });
+
+      reader.readAsDataURL(file);
+    } else {
+      previewContainer.style.display = "none"; // Sembunyikan preview jika batal pilih
+    }
+  });
+
+  function removeImage() {
+    fileInput.value = "";
+    previewImage.src = "";
+    previewImage.style.display = "none"; // Sembunyikan gambar
+    previewContainer.style.display = "none"; // Sembunyikan container
+  }
+</script>

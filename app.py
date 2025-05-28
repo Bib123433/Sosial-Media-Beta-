@@ -13,7 +13,7 @@ import random, string
 from PIL import Image
 from system.socket import online_users
 from system.socket import init_socket
-
+import re
 
 
 
@@ -308,6 +308,39 @@ def react(post_id):
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
+    user_id = ObjectId(session["user_id"])
+    user_data = mongo.db.user.find_one({"_id": user_id})
+    # Ambil daftar teman yang sudah accepted
+    accepted_friends = list(mongo.db.friend_requests.find({
+        "$or": [
+            {"sender_id": str(user_id), "status": "accepted"},
+            {"receiver_id": str(user_id), "status": "accepted"}
+        ]
+    }))
+    friends_ids = []
+    for f in accepted_friends:
+        friends_ids.append(f["receiver_id"] if f["sender_id"] == str(user_id) else f["sender_id"])
+    friend_users = list(mongo.db.user.find({"_id": {"$in": [ObjectId(fid) for fid in friends_ids]}}))
+
+    friend_requests = list(mongo.db.friend_requests.find({
+        "receiver_id": user_id,
+        "status": "pending"
+    }))
+
+    sender_ids = [ObjectId(req["sender_id"]) for req in friend_requests]
+    senders = list(mongo.db.user.find({"_id": {"$in": sender_ids}}))
+    senders_dict = {str(sender["_id"]): sender for sender in senders}
+
+    # Gabungkan data pengirim ke dalam permintaan
+    for req in friend_requests:
+        req["sender_data"] = senders_dict.get(req["sender_id"])
+        
+    friend_list_data = [{
+        "_id": str(f["_id"]),
+        "full_name": f.get("full_name", ""),
+        "profile_picture": f.get("profile_picture", "/static/default.png")
+    } for f in friend_users]
+    
     if request.method == "POST":
         full_name = request.form.get("full_name")
         lname = request.form.get("lname")
@@ -352,12 +385,17 @@ def edit_profile():
         return redirect(url_for("profile"))
 
     user_data = mongo.db.user.find_one({"_id": ObjectId(session["user_id"])})
-    return render_template("profile/profile-edit.html", user=user_data,full_name=session.get("full_name"),last_name=session.get("last_name")
-)
+    return render_template("profile/profile-edit.html", 
+                           user=user_data,full_name=session.get("full_name"),
+                           last_name=session.get("last_name"),
+                            req=friend_requests, 
+                            friend_list_data=friend_list_data,)
 
 @app.route("/search",methods=["GET"])
 @login_required
 def search():
+    user_id = session.get("user_id")
+    current_user = mongo.db.user.find_one({"_id": ObjectId(user_id)})
     query = request.args.get("q", "").strip()
     current_user_id = str(session.get("user_id"))
 
@@ -389,8 +427,11 @@ def search():
             "status" : status
         })
 
-    return render_template("search/search.html", people=people, full_name=session.get("full_name"),
-)
+    return render_template("search/search.html", 
+                           people=people,
+                           full_name=session.get("full_name"),
+                           email=session.get("email"),
+                           user = current_user)
 
         
     
@@ -461,13 +502,100 @@ def edit_password():
         else:
             flash("Password saat ini salah.")
             return redirect(url_for("edit_password"))
+        
+@app.route("/group", methods=["GET"])
+@login_required
+def group():
+    user_id = ObjectId(session["user_id"])
+    user_data = mongo.db.user.find_one({"_id": user_id})
+    # Ambil daftar teman yang sudah accepted
+    accepted_friends = list(mongo.db.friend_requests.find({
+        "$or": [
+            {"sender_id": str(user_id), "status": "accepted"},
+            {"receiver_id": str(user_id), "status": "accepted"}
+        ]
+    }))
+    friends_ids = []
+    for f in accepted_friends:
+        friends_ids.append(f["receiver_id"] if f["sender_id"] == str(user_id) else f["sender_id"])
+    friend_users = list(mongo.db.user.find({"_id": {"$in": [ObjectId(fid) for fid in friends_ids]}}))
+
+    friend_requests = list(mongo.db.friend_requests.find({
+        "receiver_id": user_id,
+        "status": "pending"
+    }))
+
+    sender_ids = [ObjectId(req["sender_id"]) for req in friend_requests]
+    senders = list(mongo.db.user.find({"_id": {"$in": sender_ids}}))
+    senders_dict = {str(sender["_id"]): sender for sender in senders}
+
+    # Gabungkan data pengirim ke dalam permintaan
+    for req in friend_requests:
+        req["sender_data"] = senders_dict.get(req["sender_id"])
+        
+    friend_list_data = [{
+        "_id": str(f["_id"]),
+        "full_name": f.get("full_name", ""),
+        "profile_picture": f.get("profile_picture", "/static/default.png")
+    } for f in friend_users]
+    
+    return render_template("grup/group.html",
+                            full_name=user_data.get("full_name"),
+                            user=user_data,
+                            req=friend_requests,  # <-- ini ditambahkan
+                            friend_list_data=friend_list_data, )
+    
+@app.route("/group_detail", methods=["GET"])
+@login_required
+def group_detail():
+    user_id = ObjectId(session["user_id"])
+    user_data = mongo.db.user.find_one({"_id": user_id})
+    # Ambil daftar teman yang sudah accepted
+    accepted_friends = list(mongo.db.friend_requests.find({
+        "$or": [
+            {"sender_id": str(user_id), "status": "accepted"},
+            {"receiver_id": str(user_id), "status": "accepted"}
+        ]
+    }))
+    friends_ids = []
+    for f in accepted_friends:
+        friends_ids.append(f["receiver_id"] if f["sender_id"] == str(user_id) else f["sender_id"])
+    friend_users = list(mongo.db.user.find({"_id": {"$in": [ObjectId(fid) for fid in friends_ids]}}))
+
+    friend_requests = list(mongo.db.friend_requests.find({
+        "receiver_id": user_id,
+        "status": "pending"
+    }))
+
+    sender_ids = [ObjectId(req["sender_id"]) for req in friend_requests]
+    senders = list(mongo.db.user.find({"_id": {"$in": sender_ids}}))
+    senders_dict = {str(sender["_id"]): sender for sender in senders}
+
+    # Gabungkan data pengirim ke dalam permintaan
+    for req in friend_requests:
+        req["sender_data"] = senders_dict.get(req["sender_id"])
+        
+    friend_list_data = [{
+        "_id": str(f["_id"]),
+        "full_name": f.get("full_name", ""),
+        "profile_picture": f.get("profile_picture", "/static/default.png")
+    } for f in friend_users]
+    
+    return render_template("grup/group-detail.html",
+                            full_name=user_data.get("full_name"),
+                            user=user_data,
+                            req=friend_requests,  # <-- ini ditambahkan
+                            friend_list_data=friend_list_data, )
 
 @app.route("/profile", methods=["GET"])
 @login_required
 def profile():
     user_id = ObjectId(session["user_id"])
     user_data = mongo.db.user.find_one({"_id": user_id})
-    
+    users = list(mongo.db.user.find())
+    users_dict = {str(user['_id']): user['full_name'] for user in users}
+
+
     # Teman yang sudah diterima
     friends_requests = mongo.db.friend_requests.find({
         "$or": [
@@ -485,6 +613,26 @@ def profile():
     
     friends_requests = list(friends_requests)
     friend_count = len(friends_requests)
+    
+     # Ambil daftar teman yang sudah accepted
+    accepted_friends = list(mongo.db.friend_requests.find({
+        "$or": [
+            {"sender_id": str(user_id), "status": "accepted"},
+            {"receiver_id": str(user_id), "status": "accepted"}
+        ]
+    }))
+
+    friends_ids = []
+    for f in accepted_friends:
+        friends_ids.append(f["receiver_id"] if f["sender_id"] == str(user_id) else f["sender_id"])
+    friend_users = list(mongo.db.user.find({"_id": {"$in": [ObjectId(fid) for fid in friends_ids]}}))
+
+        
+    friend_list_data = [{
+        "_id": str(f["_id"]),
+        "full_name": f.get("full_name", ""),
+        "profile_picture": f.get("profile_picture", "/static/default.png")
+    } for f in friend_users]
     
     # Ambil data pengirim request
     sender_ids = [ObjectId(req["sender_id"]) for req in friend_requests]
@@ -522,12 +670,15 @@ def profile():
     for post in posts:
         post["like_count"] = sum(len(post["reactions"].get(reac, [])) for reac in post["reactions"])
 
-        liked_user_ids = post["reactions"].get("like", [])
-        liked_users = mongo.db.user.find({"_id": {"$in": [ObjectId(uid) for uid in liked_user_ids]}})
-        post["liked_users"] = [user["full_name"] for user in liked_users]
-        
+        all_reacted_user_ids = set()
+        for user_list in post.get("reactions", {}).values():
+            all_reacted_user_ids.update(user_list)
+        post["liked_users"] = [users_dict.get(uid, "Unknown") for uid in all_reacted_user_ids]
+
         komentar_list = list(mongo.db.komentar.find({"post_id": post["_id"]}).sort("timestamp", -1))
-        post["komentar_list"] = komentar_list
+        for komentar in komentar_list:
+            komentar["full_name"] = users_dict.get(str(komentar["user_id"]), "Anonim")
+        post["komentar_list"] = komentar_list  # <- PENTING! assign komentar_list ke post
         post["komentar_count"] = len(komentar_list)
 
         user_reaction = None
@@ -537,7 +688,6 @@ def profile():
                 break
         post["user_reaction"] = user_reaction or "like"
 
-        post.setdefault("komentar_list", [])
 
     return render_template(
         "profile/profile.html",
@@ -547,7 +697,8 @@ def profile():
         friend_count = friend_count,
         email=user_data.get("email"),
         posts=posts,
-        req=friend_requests
+        req=friend_requests,
+        friend_list_data = friend_list_data,
     )
     
 @app.route("/profile/<user_id>", methods=["GET"])
@@ -592,7 +743,34 @@ def profile_user(user_id):
     login_friend_users = list(mongo.db.user.find({
         "_id": {"$in": [ObjectId(fid) for fid in login_friend_ids]}
     }))
+    
+    friend_requests = list(mongo.db.friend_requests.find({
+        "receiver_id": str(current_user_id),
+        "status": "pending"
+    }))
+    
+    # Ambil data pengirim request
+    sender_ids = [ObjectId(req["sender_id"]) for req in friend_requests]
+    senders = list(mongo.db.user.find({"_id": {"$in": sender_ids}}))
+    senders_dict = {str(sender["_id"]): sender for sender in senders}
 
+    for req in friend_requests:
+        sender = senders_dict.get(req["sender_id"])
+        if sender:
+            pic = sender.get("profile_picture", "")
+            pic = pic.replace("\\", "/").replace("static/", "")
+            image_path = pic if pic.startswith("uploads/") else f"uploads/{pic}"
+            if not pic.strip():
+                image_path = "static/default.png"
+
+            sender["image_path"] = image_path
+        req["sender_data"] = sender or {
+            "full_name": "Unknown User",
+            "image_path": "static/default.png"
+    }
+
+        
+        
     friend_list_data = []
     for f in login_friend_users:
         pic = f.get("profile_picture", "")
@@ -652,7 +830,8 @@ def profile_user(user_id):
         image_path=image_path,      # gambar utama
         full_name=user.get("full_name", ""),
         is_friend=is_friend,
-        friend_list_data=friend_list_data  # milik user yang sedang login
+        friend_list_data=friend_list_data,
+        req = friend_requests
     )
     
 @app.route("/unfriend/<user_id>", methods=["POST"])
@@ -772,7 +951,8 @@ def send_message():
 @login_required
 def dashboard():
     user_id = session.get("user_id")
-    
+    current_user = mongo.db.user.find_one({"_id": ObjectId(user_id)})
+
     # Ambil semua postingan
     posts = mongo.db.posts.find()
     posts_with_reaction = []
@@ -787,6 +967,8 @@ def dashboard():
             all_reacted_user_ids.update(user_list)
         post["like_count"] = len(all_reacted_user_ids)
         komentar_list = list(mongo.db.komentar.find({"post_id": post["_id"]}).sort("timestamp", -1))
+        for komentar in komentar_list:
+            komentar["full_name"] = users_dict.get(str(komentar["user_id"]), "Anonim")
         post["komentar_list"] = komentar_list
         post["komentar_count"] = len(komentar_list)
         post["liked_users"] = [users_dict.get(uid, "Unknown") for uid in all_reacted_user_ids]
@@ -797,6 +979,8 @@ def dashboard():
         "status": "pending"
     }))
 
+    pending_count = len(friend_requests)
+    
     sender_ids = [ObjectId(req["sender_id"]) for req in friend_requests]
     senders = list(mongo.db.user.find({"_id": {"$in": sender_ids}}))
     senders_dict = {str(sender["_id"]): sender for sender in senders}
@@ -813,17 +997,39 @@ def dashboard():
         ]
     }))
 
-    friend_ids = []
-    for f in accepted_friends:
-        friend_ids.append(f["receiver_id"] if f["sender_id"] == user_id else f["sender_id"])
-    friend_users = list(mongo.db.user.find({"_id": {"$in": [ObjectId(fid) for fid in friend_ids]}}))
+    friend_ids = [
+        f["receiver_id"] if f["sender_id"] == user_id else f["sender_id"]
+        for f in accepted_friends
+    ]
+    friend_users = list(mongo.db.user.find({
+        "_id": {"$in": [ObjectId(fid) for fid in friend_ids]}
+    }))
+    
+    friend_list_data = []
+    for f in friend_users:
+            # Ambil raw path
+        pic = f.get("profile_picture", "").replace("\\", "/")
 
-        
-    friend_list_data = [{
-        "_id": str(f["_id"]),
-        "full_name": f.get("full_name", ""),
-        "profile_picture": f.get("profile_picture", "/static/default.png")
-    } for f in friend_users]
+        # Hapus semua leading "static/" atau "/static/"
+        pic = re.sub(r'^/*static/*', '', pic)
+
+        # Jika kosong, pakai default
+        if not pic.strip():
+            pic = "default.png"
+
+        # Pastikan pakai uploads/ kalau memang file di folder uploads
+        if not pic.startswith("uploads/"):
+            pic = f"uploads/{pic}"
+
+        # Sekali wrap jadi URL absolut
+        pic_url = url_for('static', filename=pic)
+
+        friend_list_data.append({
+            "_id": str(f["_id"]),
+            "full_name": f.get("full_name", ""),
+            "profile_picture": pic_url
+        })
+    
 
     return render_template(
         'index.html',
@@ -831,8 +1037,9 @@ def dashboard():
         email=session.get("email"),
         posts=posts_with_reaction,
         req=friend_requests,  # <-- ini ditambahkan
-        friend_list_data=friend_list_data  # ✅ untuk sidebar/online users
-
+        friend_list_data=friend_list_data,  # ✅ untuk sidebar/online users
+        user=current_user,
+        pending_count = pending_count
     )
 
 

@@ -74,6 +74,15 @@ def init_socket(socketio, mongo):
         full_name = online_users.get(sender_id, {}).get("full_name", "Unknown")
         profile_picture = online_users.get(sender_id, {}).get("profile_picture", "")
 
+        # Normalisasi path agar bisa dipakai langsung di <img src="">
+        if profile_picture:
+            profile_picture = profile_picture.replace("\\", "/")
+            if not profile_picture.startswith("static/"):
+                profile_picture = f"static/{profile_picture}"
+            profile_picture = f"/{profile_picture}"  # agar bisa dipakai langsung di HTML
+        else:
+            profile_picture = "/static/default-avatar.png"
+
         message_data = {
             "sender_id": sender_id,
             "receiver_id": receiver_id,

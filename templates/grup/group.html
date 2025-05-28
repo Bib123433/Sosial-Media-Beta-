@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Social Media</title>
+
+    <link rel="shortcut icon" href="static/assets/images/favicon.ico" />
+    <link rel="stylesheet" href="static/assets/css/libs.min.css" />
+    <link rel="stylesheet" href="static/assets/css/socialv.css?v=4.0.0" />
+    <link
+      rel="stylesheet"
+      href="static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="static/assets/vendor/remixicon/fonts/remixicon.css"
+    />
+    <link
+      rel="stylesheet"
+      href="static/assets/vendor/vanillajs-datepicker/dist/css/datepicker.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="static/assets/vendor/font-awesome-line-awesome/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="static/assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css"
+    />
+    <style>
+      .upload-option {
+        background-color: #d9f1ff;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 50px;
+        text-decoration: none;
+        color: #333;
+      }
+
+      .upload-option:hover {
+        background-color: #c7eaff;
+      }
+
+      .hidden-input {
+        display: none;
+      }
+      .comment-box {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 6px 10px;
+        background: #fff;
+        margin-top: 20px;
+      }
+
+      .comment-box input {
+        border: none;
+        outline: none;
+        flex-grow: 1;
+        margin-right: 8px;
+      }
+
+      .comment-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center; /* pastikan semua icon sejajar tengah */
+      }
+
+      .comment-actions a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .comment-send-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0; /* kurangi padding agar tidak turun */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .comment-send-btn i {
+        font-size: 17px; /* samakan ukuran ikon */
+        color: #666;
+      }
+
+      .comment-actions i {
+        font-size: 17px;
+        color: #666;
+      }
+      .story-link {
+        cursor: pointer;
+        margin-left: 4px;
+      }
+
+      .story-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #ccc;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .story-icon {
+        font-size: 20px;
+        color: #666;
+        font-weight: bold;
+        line-height: 1;
+      }
+      .iq-profile-avatar {
+        position: relative;
+        display: inline-block;
+      }
+
+      /* dot default (offline) */
+      .iq-profile-avatar::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: #ccc; /* abu untuk offline */
+        border: 2px solid white;
+      }
+
+      /* dot hijau untuk online */
+      .iq-profile-avatar.status-online::after {
+        background-color: #4caf50;
+      }
+    </style>
+  </head>
+  <body class="  ">
+    <!-- loader Start -->
+    <div id="loading">
+      <div id="loading-center"></div>
+    </div>
+    <!-- loader END -->
+    <!-- Wrapper Start -->
+    <div class="wrapper">
+      {% include "layouts/sidebar.html" %} {% include "layouts/navbar.html" %}
+
+      <div class="right-sidebar-mini right-sidebar">
+        <div class="right-sidebar-panel p-0">
+          <div class="card shadow-none">
+            <div class="card-body p-0">
+              <div class="media-height p-3" data-scrollbar="init"></div>
+              <div class="right-sidebar-toggle bg-primary text-white mt-3">
+                <i class="ri-arrow-left-line side-left-icon"></i>
+                <i class="ri-arrow-right-line side-right-icon"
+                  ><span class="ms-3 d-inline-block">Close Menu</span></i
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Page Content  -->
+      <div class="header-for-bg">
+        <div class="background-header position-relative">
+          <img
+            src="static/assets/images/page-img/profile-bg7.jpg"
+            class="img-fluid w-100"
+            alt="header-bg"
+          />
+          <div class="title-on-header">
+            <div class="data-block">
+              <h2>Groups</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Page Content  -->
+      <div id="content-page" class="content-page">
+        <div class="container">
+          <div class="d-grid gap-3 d-grid-template-1fr-19">
+            <div class="card mb-0">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg1.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-1.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Designer</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>600</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>320</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>1.2k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card mb-0">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg2.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-2.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">R & D</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>300</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>210</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>1.1k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card mb-0">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg3.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-3.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Graphics</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>320</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>100</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>1.0k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card mb-0">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg4.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-4.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Developer</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>800</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>480</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>2.2k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card mb-0">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg5.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-5.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Tester</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>200</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>100</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>32</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card mb-0">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg6.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-6.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Events</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>1000</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>500</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>3.2k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg7.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-7.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Coder</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>300</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>220</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>25k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg9.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-8.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Themes</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>1200</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>800</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>3.2k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="top-bg-image">
+                <img
+                  src="static/assets/images/page-img/profile-bg1.jpg"
+                  class="img-fluid w-100"
+                  alt="group-bg"
+                />
+              </div>
+              <div class="card-body text-center">
+                <div class="group-icon">
+                  <img
+                    src="static/assets/images/page-img/gi-9.jpg"
+                    alt="profile-img"
+                    class="rounded-circle img-fluid avatar-120"
+                  />
+                </div>
+                <div class="group-info pt-3 pb-3">
+                  <h4><a href="/group_detail">Review</a></h4>
+                  <p>Lorem Ipsum data</p>
+                </div>
+                <div class="group-details d-inline-block pb-3">
+                  <ul
+                    class="d-flex align-items-center justify-content-between list-inline m-0 p-0"
+                  >
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Post</p>
+                      <h6>300</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Member</p>
+                      <h6>1000</h6>
+                    </li>
+                    <li class="pe-3 ps-3">
+                      <p class="mb-0">Visit</p>
+                      <h6>4.5k</h6>
+                    </li>
+                  </ul>
+                </div>
+                <div class="group-member mb-3">
+                  <div class="iq-media-group">
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/05.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/06.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/07.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/08.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/09.jpg"
+                        alt=""
+                      />
+                    </a>
+                    <a href="#" class="iq-media">
+                      <img
+                        class="img-fluid avatar-40 rounded-circle"
+                        src="static/assets/images/user/10.jpg"
+                        alt=""
+                      />
+                    </a>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                  Join
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% include "layouts/footer.html"%}
+
+    <script>
+      const friendList = {{ friend_list_data | tojson }};
+
+      function renderFriends(onlineIds) {
+      const container = document.querySelector(".media-height");
+      container.innerHTML = "";
+
+      friendList.forEach(f => {
+          const isOnline   = onlineIds.includes(f._id);
+          const dotClass   = isOnline ? "status-online" : "";
+          const statusText = isOnline ? "Online" : "Offline";
+
+          // pastikan path lengkap
+          let profilePic = f.profile_picture || "default.png";
+          if (!profilePic.startsWith("/") && !profilePic.startsWith("http")) {
+          profilePic = "/static/uploads/" + profilePic;
+          } else if (profilePic.startsWith("/static/uploads/")) {
+          // Sudah benar, biarkan
+          } else if (profilePic.startsWith("uploads/")) {
+          profilePic = "/static/" + profilePic;
+          }
+
+          console.log("Profile Pic Path:", profilePic);
+
+          const html = `
+          <div class="d-flex align-items-center mb-4" onclick="openChat('${f._id}', '${f.full_name}', '${profilePic}')">
+              <div class="iq-profile-avatar ${dotClass}">
+              <img class="rounded-circle avatar-50"
+                  src="${f.profile_picture}"
+                  alt="${f.full_name}" />
+              </div>
+              <div class="ms-3">
+              <h6 class="mb-0">${f.full_name}</h6>
+              <p class="mb-0">${statusText}</p>
+              </div>
+          </div>
+          `;
+          container.insertAdjacentHTML("beforeend", html);
+      });
+      }
+      // 3) inisialisasi: semua teman offline
+      renderFriends([]);
+
+      // 4) koneksi Socket.IO
+      const socket = io({
+          auth: {
+          user_id:   "{{ session.get('user_id') }}",
+          full_name: "{{ session.get('full_name') }}"
+          }
+      });
+
+      socket.on("connect", () => {
+          socket.emit("request_online_users");
+      });
+
+      socket.on("online_users", users => {
+          const onlineIds = users.map(u => u.user_id);
+          renderFriends(onlineIds);
+      });
+
+      // opsional: live update saat user connect/disconnect
+      socket.on("user_connected",   () => socket.emit("request_online_users"));
+      socket.on("user_disconnected",() => socket.emit("request_online_users"));
+
+      socket.on("new_message", (data) => {
+      console.log("📩 Dapat pesan:", data);
+
+      const currentReceiverId = document.getElementById("receiver-id").value;
+      const myId = document.getElementById("sender-id").value;
+
+      // Kalau pengirim bukan yang lagi kita buka, ganti tampilan
+      if (data.sender_id !== myId && data.sender_id !== currentReceiverId) {
+          openChat(data.sender_id, data.full_name, data.profile_picture);
+      }
+
+      const chatBody = document.querySelector("#chat-box .flex-grow-1");
+      const messageElement = document.createElement("div");
+
+      const isOwnMessage = data.sender_id === myId;
+      messageElement.classList.add("d-flex", isOwnMessage ? "justify-content-end" : "justify-content-start", "mb-2");
+
+      messageElement.innerHTML = isOwnMessage
+          ? `
+          <div class="badge bg-primary" style="padding: 10px 20px;
+                                          border-radius: 20px;
+                                          max-width: 70%;
+                                          font-size: 14px;
+                                          display: inline-block;
+                                          word-break: break-word;">${data.message}</div>
+          `
+          : `
+          <div class="d-flex align-items-start" style="margin-top:20px;">
+              <img src="${data.profile_picture}" alt="Foto"
+                  class="rounded-circle me-2" width="32" height="32">
+              <span class="badge bg-primary" style="padding: 10px 20px;
+                                                      border-radius: 20px;
+                                                      max-width: 70%;
+                                                      font-size: 14px;">${data.message}</span>
+          </div>
+          `;
+
+      chatBody.appendChild(messageElement);
+      chatBody.scrollTop = chatBody.scrollHeight;
+      });
+
+
+
+      function openChat(userId, fullName = "", profilePic = "") {
+      const chatBox = document.getElementById('chat-box');
+      chatBox.style.display = 'flex';
+      chatBox.classList.remove('chat-pop');
+      void chatBox.offsetWidth;
+      chatBox.classList.add('chat-pop');
+
+      document.getElementById("receiver-id").value = userId;
+
+      if (fullName) {
+          const nameElements = chatBox.querySelectorAll(".fw-bold.text-dark");
+          nameElements.forEach(el => el.textContent = fullName);
+      }
+
+      if (profilePic) {
+          const profileImg = chatBox.querySelector("#chat-profile-picture");
+          if (profileImg) {
+          profileImg.src = profilePic;
+          profileImg.onerror = function() {
+              this.src = "/static/default.png"; // fallback kalau error load
+          };
+          }
+      }
+      }
+
+
+
+      function closeChat() {
+          const chatBox = document.getElementById('chat-box');
+          chatBox.style.display = 'none';
+          chatBox.classList.remove('chat-pop');
+      }
+      function toggleSendButton() {
+          const input = document.getElementById("chat-input");
+          const likeButton = document.getElementById("like-button");
+          const sendButton = document.getElementById("send-button");
+
+          if (input.value.trim() !== "") {
+          likeButton.classList.add("d-none");
+          sendButton.classList.remove("d-none");
+          } else {
+          likeButton.classList.remove("d-none");
+          sendButton.classList.add("d-none");
+          }
+      }
+
+      function sendMessage() {
+          const messageInput = document.getElementById("chat-input");
+          const message = messageInput.value.trim();
+          if (!message) return;
+
+          const senderId = document.getElementById("sender-id").value;
+          const receiverId = document.getElementById("receiver-id").value;
+
+          // Emit pesan ke backend
+          socket.emit("send_message", {
+          sender_id: senderId,
+          receiver_id: receiverId,
+          message: message
+          });
+
+          // Tampilkan langsung di sisi pengirim
+          const chatBody = document.querySelector("#chat-box .flex-grow-1");
+          const messageElement = document.createElement("div");
+          messageElement.classList.add("text-end", "mb-2");
+          messageElement.innerHTML = `
+          <span class="badge bg-primary" style="padding: 10px 20px;
+                                                  border-radius: 20px;
+                                                  max-width: 70%;
+                                                  font-size: 14px;">${message}</span>
+          `;
+
+          messageInput.value = '';
+          toggleSendButton();
+      }
+
+      document.getElementById("send-button").addEventListener("click", sendMessage);
+    </script>
+
+    <!-- offcanvas start -->
+  </body>
+</html>

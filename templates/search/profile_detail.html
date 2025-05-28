@@ -215,28 +215,52 @@
   .chat-pop {
     animation: popIn 0.3s ease-out forwards;
   }
-   .iq-profile-avatar {
+  .iq-profile-avatar {
   position: relative;
   display: inline-block;
-}
+  }
 
-/* dot default (offline) */
-.iq-profile-avatar::after {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background-color: #ccc;      /* abu untuk offline */
-  border: 2px solid white;
-}
+  /* dot default (offline) */
+  .iq-profile-avatar::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #ccc;      /* abu untuk offline */
+    border: 2px solid white;
+  }
 
-/* dot hijau untuk online */
-.iq-profile-avatar.status-online::after {
-  background-color: #4caf50;
-}
+  /* dot hijau untuk online */
+  .iq-profile-avatar.status-online::after {
+    background-color: #4caf50;
+  }
+  .emoji-bubble-sent {
+        font-size: 36px;
+        line-height: 1;
+        padding: 10px;
+        border-radius: 20px;
+        background: transparent;
+        /* atau warna khusus jika mau */
+      }
+
+      .emoji-bubble-received {
+        font-size: 36px;
+        line-height: 1;
+        padding: 10px;
+        border-radius: 20px;
+        background: transparent;
+      }
+
+      /* opsional: kalau mau background ringan */
+      .emoji-bubble-sent {
+        background: rgba(0, 123, 255, 0.1);
+      }
+      .emoji-bubble-received {
+        background: rgba(233, 236, 239, 0.7);
+      }
     </style>
   </head>
   <body class="  ">
@@ -262,7 +286,7 @@
                 </a>
               </li>
               <li class="">
-                <a href="static/app/group.html" class=" ">
+                <a href="/group" class=" ">
                   <i class="las la-users"></i><span>Group</span>
                 </a>
               </li>
@@ -768,43 +792,36 @@
                         </div>
                         <small class="badge bg-light text-dark">4</small>
                       </div>
-                      <div class="card-body p-0">
-                  {% if session['user_id'] == user['_id']|string %}
-                    {% if req %}
-                      {% for req in req %}
-                        <div class="iq-friend-request">
-                          <div class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                              <img
-                                class="avatar-40 rounded"
-                                src="{{ req.sender_data.profile_picture or url_for('static', filename='assets/images/user/01.jpg') }}"
-                                alt=""
-                              />
-                              <div class="ms-3">
-                                <h6 class="mb-0">{{ req.sender_data.full_name }}</h6>
-                                <p class="mb-0">100 friends</p>
+                        <div class="card-body p-0">
+                        {% for req in req %}
+                          <div class="iq-friend-request">
+                            <div class="iq-sub-card iq-sub-card-big d-flex align-items-center justify-content-between">
+                              <div class="d-flex align-items-center">
+                                <img
+                                  class="avatar-40 rounded"
+                                  src="{{ req.sender_data.image_path or url_for('static', filename='assets/images/user/01.jpg') }}"
+                                  alt=""
+                                />
+                                <div class="ms-3">
+                                  <h6 class="mb-0">{{ req.sender_data.full_name }}</h6>
+                                  <p class="mb-0">Friends</p>
+                                </div>
+                              </div>
+                              <div class="d-flex align-items-center">
+                                <form action="{{ url_for('accept_friend') }}" method="post" class="me-3">
+                                  <input type="hidden" name="sender_id" value="{{ req.sender_data._id }}"/>
+                                  <button type="submit" class="btn btn-primary rounded">Confirm</button>
+                                </form>
+                                <form action="" method="post">
+                                  <input type="hidden" name="sender_id" value="{{ req.sender_data._id }}"/>
+                                  <button type="submit" class="btn btn-secondary rounded">Delete Request</button>
+                                </form>
                               </div>
                             </div>
-                            <div class="d-flex align-items-center">
-                              <form action="{{ url_for('accept_friend') }}" method="post" class="me-3">
-                                <input type="hidden" name="sender_id" value="{{ req.sender_data._id }}"/>
-                                <button type="submit" class="btn btn-primary rounded">Confirm</button>
-                              </form>
-                              <form action="{{ url_for('delete_friend_request') }}" method="post">
-                                <input type="hidden" name="sender_id" value="{{ req.sender_data._id }}"/>
-                                <button type="submit" class="btn btn-secondary rounded">Delete Request</button>
-                              </form>
-                            </div>
                           </div>
-                        </div>
-                      {% endfor %}
-                    {% else %}
-                      <div class="text-center p-3">No pending friend requests.</div>
-                    {% endif %}
-                  {% endif %}
-                </div>
-              
-                      
+                        {% endfor %}
+                      </div>             
+
                         <div class="text-center mt-3">
                           <a href="#" class="btn text-primary">View More Request</a>
                         </div>
@@ -1186,9 +1203,12 @@
                                 <a class="dropdown-item" href="#">Block</a>
                             </div>
                           </div>
-                          <button class="btn btn-primary" onclick="openChat()">
+                          <button
+                            class="btn btn-primary"
+                            onclick="openChat('{{ user._id }}', '{{ user.full_name }}', '{{ image_path }}')">
                             <i class="ri-messenger-line me-2" style="font-size: 16px;"></i> Kirim pesan
-                          </button>                          
+                        </button>
+                        
                         </div>
                         {% else %}
                           <form action="{{ url_for('add_friend') }}" method="post">
@@ -5555,107 +5575,130 @@
         </div>
       </div>
     </div>
-  <div id="chat-box" class="card shadow border flex-column"
-    style="width: 360px; height: 480px; position: fixed; top:200px; bottom: 20px; right: 90px; z-index: 1050; display: none;">
-
-
- <!-- Header -->
- <div class="d-flex justify-content-between align-items-center border-bottom px-3 py-2 bg-white">
-  <div class="d-flex align-items-center gap-2">
-    <img src="{{ url_for('static', filename=image_path) }}"
-         class="rounded-circle" width="32" height="32" alt="Foto">
-    <span class="fw-bold text-dark">{{ user.full_name }}</span>
-  </div>
-  <div class="d-flex align-items-center gap-2 text-primary">
-    <button class="btn btn-sm p-0"><i class="fas fa-phone-alt"></i></button>
-    <button class="btn btn-sm p-0"><i class="fas fa-video"></i></button>
-    <button class="btn btn-sm p-0"><i class="fas fa-minus"></i></button>
-    <button class="btn btn-sm p-0" onclick="closeChat()"><i class="fas fa-times"></i></button>
-  </div>  
-</div>
-
-
- <!-- Body -->
- <div class="text-center bg-white flex-grow-1 py-4 px-3 overflow-auto" id="chat-messages">
-   <img src="{{ url_for('static', filename=image_path) }}" alt="Profile"
-        class="rounded-circle mb-2" width="80" height="80">
-   <div class="fw-bold text-dark" style="font-size: 14px;">{{ user.full_name }}</div>
- </div>
-
- <!-- Footer -->
- <div class="border-top bg-white px-2 py-1">
-  <div class="d-flex align-items-center">
-    <button class="btn btn-link text-primary p-0 me-1" title="Mic"><i class="fas fa-microphone fa-lg"></i></button>
-    <button class="btn btn-link text-primary p-0 me-1" title="Photo"><i class="far fa-image fa-lg"></i></button>
-    <button class="btn btn-link text-primary p-0 me-1" title="Sticker"><i class="fas fa-sticky-note fa-lg"></i></button>
-    <button class="btn btn-link text-primary p-0 me-1" title="GIF"><i class="fas fa-file-video fa-lg"></i></button>
-
-    <input type="text" id="chat-input" class="form-control form-control-sm mx-2 rounded-pill" placeholder="Aa" oninput="toggleSendButton()">
-
-    <button class="btn btn-link text-primary p-0 me-1" title="Emoji"><i class="far fa-smile fa-lg"></i></button>
-    <input type="hidden" id="receiver-id" value="{{ user._id }}">
-    <input type="hidden" id="sender-id" value="{{ session.get('user_id') }}">
-    
-    
-    <!-- Tombol Like -->
-    <button id="like-button" class="btn btn-link text-primary p-0" title="Like">
-      <i class="fas fa-thumbs-up fa-lg"></i>
-    </button>
-
-    <!-- Tombol Kirim -->
-    <button id="send-button" class="btn btn-link text-primary p-0 d-none" title="Send">
-      <i class="fas fa-paper-plane fa-lg"></i>
-    </button>
-  </div>
-</div>
-
-
- <!-- Status -->
- <div class="text-center text-muted small py-1 px-2">
-   Sekarang Anda berteman dengan {{ user.full_name }}
- </div>
-</div>
-
-    <!-- Wrapper End-->
-    <footer class="iq-footer bg-white">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-lg-6">
-            <ul class="list-inline mb-0">
-              <li class="list-inline-item">
-                <a href="static/dashboard/privacy-policy.html"
-                  >Privacy Policy</a
-                >
-              </li>
-              <li class="list-inline-item">
-                <a href="static/dashboard/terms-of-service.html"
-                  >Terms of Use</a
-                >
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-6 d-flex justify-content-end">
-            Copyright 2020 <a href="#">SocialV</a> All Rights Reserved.
-          </div>
+  <div
+      id="chat-box"
+      class="card shadow border flex-column"
+      style="
+        width: 360px;
+        height: 480px;
+        position: fixed;
+        top: 200px;
+        bottom: 20px;
+        right: 90px;
+        z-index: 1050;
+        display: none;
+      "
+    >
+      <!-- Header -->
+      <div
+        class="d-flex justify-content-between align-items-center border-bottom px-3 py-2 bg-white"
+      >
+        <div class="d-flex align-items-center gap-2">
+          <img
+            src="{{ url_for('static', filename=image_path) }}"
+            class="rounded-circle"
+            width="32"
+            height="32"
+            alt="Foto"
+          />
+          <span class="fw-bold text-dark">{{ user.full_name }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 text-primary">
+          <button class="btn btn-sm p-0">
+            <i class="fas fa-phone-alt"></i>
+          </button>
+          <button class="btn btn-sm p-0"><i class="fas fa-video"></i></button>
+          <button class="btn btn-sm p-0"><i class="fas fa-minus"></i></button>
+          <button class="btn btn-sm p-0" onclick="closeChat()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
-    </footer>
-    <!-- Backend Bundle JavaScript -->
-   <script src="{{ url_for('static', filename='assets/js/libs.min.js') }}"></script>
-   <!-- slider JavaScript -->
-   <script src="{{ url_for('static', filename='assets/js/slider.js') }}"></script>
-   <!-- masonry JavaScript -->
-   <script src="{{ url_for('static', filename='assets/js/masonry.pkgd.min.js') }}"></script>
-   <!-- SweetAlert JavaScript -->
-   <script src="{{ url_for('static', filename='assets/js/enchanter.js') }}"></script>
-   <!-- SweetAlert JavaScript -->
-   <script src="{{ url_for('static', filename='assets/js/sweetalert.js') }}"></script>
-   <!-- app JavaScript -->
-   <script src="{{ url_for('static', filename='assets/js/charts/weather-chart.js') }}"></script>
-   <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
-   <script src="{{ url_for('static', filename='vendor/vanillajs-datepicker/dist/js/datepicker.min.js') }}"></script>
-   <script src="{{ url_for('static', filename='assets/js/lottie.js') }}"></script>
-   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+
+      <!-- Body -->
+      <div
+        class="text-center bg-white flex-grow-1 py-4 px-3 overflow-auto"
+        id="chat-messages"
+      >
+        <img
+          src="{{ url_for('static', filename=image_path) }}"
+          alt="Profile"
+          class="rounded-circle mb-2"
+          width="80"
+          height="80"
+        />
+        <div class="fw-bold text-dark w" style="font-size: 14px">
+          {{ user.full_name }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="border-top bg-white px-2 py-1">
+        <div class="d-flex align-items-center">
+          <button class="btn btn-link text-primary p-0 me-1" title="Mic">
+            <i class="fas fa-microphone fa-lg"></i>
+          </button>
+          <button class="btn btn-link text-primary p-0 me-1" title="Photo">
+            <i class="far fa-image fa-lg"></i>
+          </button>
+          <button class="btn btn-link text-primary p-0 me-1" title="Sticker">
+            <i class="fas fa-sticky-note fa-lg"></i>
+          </button>
+          <button class="btn btn-link text-primary p-0 me-1" title="GIF">
+            <i class="fas fa-file-video fa-lg"></i>
+          </button>
+
+          <input
+            type="text"
+            id="chat-input"
+            class="form-control form-control-sm mx-2 rounded-pill"
+            placeholder="Aa"
+            oninput="toggleSendButton()"
+          />
+
+          <button class="btn btn-link text-primary p-0 me-1" title="Emoji">
+            <i class="far fa-smile fa-lg"></i>
+          </button>
+          <!-- di dalam #chat-box -->
+          <emoji-picker
+            id="emoji-picker"
+            style="position: absolute; bottom: 60px; right: 20px; display: none; z-index: 2000;"
+          ></emoji-picker>
+
+          <input type="hidden" id="receiver-id" value="" />
+          <input
+            type="hidden"
+            id="sender-id"
+            value="{{ session.get('user_id') }}"
+          />
+
+          <!-- Tombol Like -->
+          <button
+            id="like-button"
+            class="btn btn-link text-primary p-0"
+            title="Like"
+          >
+            <i class="fas fa-thumbs-up fa-lg"></i>
+          </button>
+
+          <!-- Tombol Kirim -->
+          <button
+            id="send-button"
+            class="btn btn-link text-primary p-0 d-none"
+            title="Send"
+          >
+            <i class="fas fa-paper-plane fa-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="text-center text-muted small py-1 px-2">
+        Sekarang Anda berteman dengan {{ user.full_name }}
+      </div>
+    </div>
+  {% include "layouts/footer.html"%}
+
 
 
     <script>
@@ -5683,7 +5726,7 @@
     }
 
       const html = `
-        <div class="d-flex align-items-center mb-4">
+        <div class="d-flex align-items-center mb-4" onclick="openChat('${f._id}', '${f.full_name}', '${profilePic}')">
           <div class="iq-profile-avatar ${dotClass}">
             <img class="rounded-circle avatar-50"
                  src="${profilePic}"
@@ -5714,39 +5757,140 @@
   socket.on("user_disconnected",() => socket.emit("request_online_users"));
 
 
-  function sendMessage() {
-    const messageInput = document.getElementById("chat-input");
-    const message = messageInput.value.trim();
-    if (!message) return;
+   // Terima pesan baru
+       socket.on("new_message", data => {
+         console.log("📩 Dapat pesan:", data);
 
-    const senderId = document.getElementById("sender-id").value;
-    const receiverId = document.getElementById("receiver-id").value;
+         const myId             = document.getElementById("sender-id").value;
+         const currentReceiver  = document.getElementById("receiver-id").value;
+         const isOwnMessage     = data.sender_id === myId;
 
-    // Emit pesan ke backend
-    socket.emit("send_message", {
-      sender_id: senderId,
-      receiver_id: receiverId,
-      message: message
-    });
+         // Jika chat box belum terbuka untuk pengirim, buka otomatis
+         if (!isOwnMessage && data.sender_id !== currentReceiver) {
+           openChat(data.sender_id, data.full_name, data.profile_picture);
+         }
 
-    // Tampilkan langsung di sisi pengirim
-    const chatBody = document.querySelector("#chat-box .flex-grow-1");
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("text-end", "mb-2");
-    messageElement.innerHTML = `
-      <span class="badge bg-primary" style="padding: 10px 20px;
-                                            border-radius: 20px;
-                                            max-width: 70%;
-                                            font-size: 14px;">${message}</span>
-    `;
-    chatBody.appendChild(messageElement);
-    chatBody.scrollTop = chatBody.scrollHeight;
+         // Buat elemen pesan
+         const chatBody = document.querySelector("#chat-box .flex-grow-1");
+         const wrapper  = document.createElement("div");
+         wrapper.classList.add("d-flex", "mb-2",
+           isOwnMessage
+             ? "justify-content-end"
+             : "justify-content-start"
+         );
 
-    messageInput.value = '';
-    toggleSendButton();
-  }
+       // Render konten pesan
+          if (emojiOnly(data.message)) {
+            // bubble besar
+            wrapper.innerHTML = isOwnMessage
+              ? `<div class="emoji-bubble-sent">${data.message}</div>`
+              : `
+                <img src="${data.profile_picture}" class="rounded-circle me-2" width="32" height="32" alt="">
+                <div class="emoji-bubble-received">${data.message}</div>
+              `;
+          } else {
+            // pesan biasa
+            wrapper.innerHTML = isOwnMessage
+              ? `<div class="badge bg-primary text-wrap" style="padding:12px 20px; border-radius:20px; max-width:70%;font-size:14px;">
+                  ${data.message}
+                </div>`
+              : `
+                <img src="${data.profile_picture}" class="rounded-circle me-2" width="32" height="32" alt="">
+                <span class="badge bg-primary text-wrap" style="padding:12px 20px;border-radius:20px;max-width:70%;font-size:14px;">
+                  ${data.message}
+                </span>
+              `;
+          }
 
-  document.getElementById("send-button").addEventListener("click", sendMessage);
+         chatBody.appendChild(wrapper);
+         chatBody.scrollTop = chatBody.scrollHeight;
+       });
+
+       function emojiOnly(text){
+         return /^\p{Extended_Pictographic}+$/u.test(text.trim());
+       }
+
+        function openChat(userId, fullName = "", profilePic = "") {
+        const chatBox = document.getElementById('chat-box');
+        chatBox.style.display = 'flex';
+        chatBox.classList.remove('chat-pop');
+        void chatBox.offsetWidth;
+        chatBox.classList.add('chat-pop');
+
+        document.getElementById("receiver-id").value = userId;
+
+        if (fullName) {
+          const nameElements = chatBox.querySelectorAll(".fw-bold.text-dark");
+          nameElements.forEach(el => el.textContent = fullName);
+        }
+
+        if (profilePic) {
+          const profileImg = chatBox.querySelector("#chat-profile-picture");
+          if (profileImg) {
+            profileImg.src = profilePic;
+            profileImg.onerror = function() {
+              this.src = "/static/default.png"; // fallback kalau error load
+            };
+          }
+        }
+      }
+
+
+
+        function closeChat() {
+          const chatBox = document.getElementById('chat-box');
+          chatBox.style.display = 'none';
+          chatBox.classList.remove('chat-pop');
+        }
+         function toggleSendButton() {
+          const input = document.getElementById("chat-input");
+          const likeButton = document.getElementById("like-button");
+          const sendButton = document.getElementById("send-button");
+
+          if (input.value.trim() !== "") {
+            likeButton.classList.add("d-none");
+            sendButton.classList.remove("d-none");
+          } else {
+            likeButton.classList.remove("d-none");
+            sendButton.classList.add("d-none");
+          }
+        }
+
+        function sendMessage() {
+          const senderId   = document.getElementById("sender-id")?.value;
+          const receiverId = document.getElementById("receiver-id")?.value;
+          const messageInput = document.getElementById("chat-input");
+          const message = messageInput.value.trim();
+          if (!message) return;
+
+          console.log("❗ sendMessage()", { senderId, receiverId, message });
+
+        if (!receiverId) {
+          return alert("Pilih dulu teman yang ingin diajak chat!");
+        }
+
+        socket.emit("send_message", {
+          sender_id:   senderId,
+          receiver_id: receiverId,
+          message
+        });
+
+          // Tampilkan langsung di sisi pengirim
+          const chatBody = document.querySelector("#chat-box .flex-grow-1");
+          const messageElement = document.createElement("div");
+          messageElement.classList.add("text-end", "mb-2");
+          messageElement.innerHTML = `
+            <span class="badge bg-primary" style="padding: 10px 20px;
+                                                  border-radius: 20px;
+                                                  max-width: 70%;
+                                                  font-size: 14px;">${message}</span>
+          `;
+
+          messageInput.value = '';
+          toggleSendButton();
+        }
+
+        document.getElementById("send-button").addEventListener("click", sendMessage);
 
     function sendFriendRequest(receiverId) {
       fetch(`/add_friend/${receiverId}`, {
@@ -5786,32 +5930,34 @@
           alert("Failed to unfriend.");
       });
   }
-   function openChat() {
-    const chatBox = document.getElementById('chat-box');
-    chatBox.style.display = 'flex';
-    chatBox.classList.remove('chat-pop'); // Reset animasi kalau dibuka lagi
-    void chatBox.offsetWidth; // Trigger reflow untuk restart animasi
-    chatBox.classList.add('chat-pop');
-  }
+  // inisialisasi
+const emojiBtn = document.querySelector('button[title="Emoji"]');
+const picker   = document.getElementById('emoji-picker');
+const input    = document.getElementById('chat-input');
 
-  function closeChat() {
-    const chatBox = document.getElementById('chat-box');
-    chatBox.style.display = 'none';
-    chatBox.classList.remove('chat-pop');
-  }
-   function toggleSendButton() {
-    const input = document.getElementById("chat-input");
-    const likeButton = document.getElementById("like-button");
-    const sendButton = document.getElementById("send-button");
+// toggle display picker
+emojiBtn.addEventListener('click', () => {
+  picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+});
 
-    if (input.value.trim() !== "") {
-      likeButton.classList.add("d-none");
-      sendButton.classList.remove("d-none");
-    } else {
-      likeButton.classList.remove("d-none");
-      sendButton.classList.add("d-none");
-    }
+// ketika emoji dipilih
+picker.addEventListener('emoji-click', event => {
+  input.value += event.detail.unicode;   // tambahkan emoji ke input
+  input.focus();                         // kembali fokus ke input
+  // sembunyikan picker jika perlu
+  // picker.style.display = 'none';
+  toggleSendButton();                    // update tombol send/like
+});
+
+// tutup picker kalau klik di luar
+document.addEventListener('click', e => {
+  if (!picker.contains(e.target) && !emojiBtn.contains(e.target)) {
+    picker.style.display = 'none';
   }
+});
+
+   
+  
    </script>
     <!-- offcanvas start -->
 
