@@ -275,7 +275,7 @@
                     <div class="d-flex align-items-center">
                       <div class="user-img">
                         <img
-                          src="static/assets/images/user/1.jpg"
+                          src="{{ user.profile_picture or url_for('static', filename='assets/images/user/11.png') }}"
                           alt="userimg"
                           class="avatar-60 rounded-circle"
                         />
