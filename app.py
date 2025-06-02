@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, session, redirect, url_for, flash
+from flask import Flask, g, request, jsonify, render_template, session, redirect, url_for, flash
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -14,6 +14,7 @@ from PIL import Image
 from system.socket import online_users
 from system.socket import init_socket
 import re
+import json
 
 
 
@@ -42,6 +43,20 @@ def naturaltime_filter(value):
     import datetime
     now = datetime.datetime.utcnow()
     return humanize.naturaltime(now - value)
+
+@app.before_request
+def load_notifications():
+    if "user_id" in session:
+        uid = ObjectId(session["user_id"])
+        count_unread = mongo.db.notifications.count_documents({
+            "to_user_id": uid,
+            "is_read": False
+        })
+        # Simpan di g untuk diakses di template, misalnya:
+        g.unread_notifications = count_unread
+    else:
+        g.unread_notifications = 0
+
 
 def get_user_reaction(post, user_id):
     for react_type, users in post.get("reactions", {}).items():
@@ -103,6 +118,7 @@ app.config['MAIL_MAX_EMAILS'] = None
 
 mail = Mail(app)
 
+POST_PER_PAGE = 5
 
 # Decorator untuk proteksi route, cek session['user_id']
 def login_required(f):
@@ -215,6 +231,7 @@ def post():
     if request.method == "POST":
         text = request.form.get("text")
         image = request.files.get("image")
+        privasi = request.form.get("privasi", "Publik")
         
         image_path = "None"
         if image and image.filename != "":
@@ -222,12 +239,21 @@ def post():
             image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             image.save(image_path)
             
+        tag_json = request.form.get("tag_users", "[]")
+        try:
+            tag_list = json.loads(tag_json)
+        except json.JSONDecodeError:    
+            tag_list = []
+            
+                
         post_data = {
             "user_id": ObjectId(session["user_id"]),
             "full_name": session["full_name"],
             "email": session["email"],
             "text": text,
             "image": image_path,
+            "privasi": privasi,
+            "tag_users": [ObjectId(tid) for tid in tag_list],  # list of ObjectId
             "timestamp": datetime.utcnow(),
             "reactions": {
                 "like": [],
@@ -237,7 +263,22 @@ def post():
                 "angry": []
             }
         }
-        mongo.db.posts.insert_one(post_data)
+        result = mongo.db.posts.insert_one(post_data)
+        post_id = result.inserted_id
+        
+        for tid in tag_list:
+            if not ObjectId.is_valid(tid):
+                continue
+            to_user_id = ObjectId(tid)
+            notification = {
+                "type": "tag",
+                "user_id": ObjectId(session["user_id"]),   
+                "to_user_id": to_user_id,                
+                "post_id": post_id,
+                "timestamp": datetime.utcnow(),
+                "is_read": False
+            }
+            mongo.db.notifications.insert_one(notification)
         return redirect(url_for("dashboard"))
     
 @app.route("/post-profile", methods=["GET", "POST"])
@@ -954,25 +995,83 @@ def dashboard():
     current_user = mongo.db.user.find_one({"_id": ObjectId(user_id)})
 
     # Ambil semua postingan
-    posts = mongo.db.posts.find()
+    
+    try:
+        page = int(request.args.get("page", 1))
+        if page < 1:
+            page = 1
+    except ValueError:
+        page = 1
+        
+    offset = (page - 1) * POST_PER_PAGE
+    limit = POST_PER_PAGE 
+       
+    posts = mongo.db.posts.find().sort("timestamp", -1).skip(offset).limit(limit)
     posts_with_reaction = []
     users = list(mongo.db.user.find())
     users_dict = {str(user['_id']): user['full_name'] for user in users}
+    
+    accepted_friends = list(mongo.db.friend_requests.find({
+        "$or": [
+            {"sender_id": user_id, "status": "accepted"},
+            {"receiver_id": user_id, "status": "accepted"}
+        ]
+    }))
+    
+    friend_ids = []
+    
+    for f in accepted_friends:
+        if f["sender_id"] == user_id:
+            friend_ids.append(f["receiver_id"])
+        else:
+            friend_ids.append(f["sender_id"])
+            
+   
+        
+    
 
     # Tambahkan reaksi & komentar untuk setiap postingan
     for post in posts:
+        
+        pemilik = str(post.get("user_id"))
+        privasi = post.get("privasi", "Publik")
+        boleh_liat = False
+        
+        if privasi == "Publik":
+            boleh_liat = True
+        elif privasi == "Teman":
+            if pemilik == user_id or pemilik in friend_ids:
+                boleh_liat = True
+        elif privasi == "Hanya Saya":
+            if pemilik == user_id:
+                boleh_liat = True
+                
+        if not boleh_liat:
+            continue
+       
+        
+        ## Fungsi Reaction
         post["user_reaction"] = get_user_reaction(post, user_id)
         all_reacted_user_ids = set()
         for user_list in post.get("reactions", {}).values():
             all_reacted_user_ids.update(user_list)
         post["like_count"] = len(all_reacted_user_ids)
         komentar_list = list(mongo.db.komentar.find({"post_id": post["_id"]}).sort("timestamp", -1))
+        
+        ## Fungsi Komentar
         for komentar in komentar_list:
             komentar["full_name"] = users_dict.get(str(komentar["user_id"]), "Anonim")
         post["komentar_list"] = komentar_list
         post["komentar_count"] = len(komentar_list)
         post["liked_users"] = [users_dict.get(uid, "Unknown") for uid in all_reacted_user_ids]
+        
         posts_with_reaction.append(post)
+    total_posts_count = mongo.db.posts.count_documents({})
+        
+    is_ajax = request.args.get("ajax") == "1"
+    if is_ajax:
+        return render_template("_post_items.html", posts=posts_with_reaction)
+
 
     friend_requests = list(mongo.db.friend_requests.find({
         "receiver_id": user_id,
@@ -990,17 +1089,9 @@ def dashboard():
         req["sender_data"] = senders_dict.get(req["sender_id"])
         
      # Ambil daftar teman yang sudah accepted
-    accepted_friends = list(mongo.db.friend_requests.find({
-        "$or": [
-            {"sender_id": user_id, "status": "accepted"},
-            {"receiver_id": user_id, "status": "accepted"}
-        ]
-    }))
-
-    friend_ids = [
-        f["receiver_id"] if f["sender_id"] == user_id else f["sender_id"]
-        for f in accepted_friends
-    ]
+    
+    
+            
     friend_users = list(mongo.db.user.find({
         "_id": {"$in": [ObjectId(fid) for fid in friend_ids]}
     }))
@@ -1036,10 +1127,13 @@ def dashboard():
         full_name=session.get("full_name"),
         email=session.get("email"),
         posts=posts_with_reaction,
+        current_page=page,          # pastikan ini ada
+        posts_per_page=POST_PER_PAGE,
         req=friend_requests,  # <-- ini ditambahkan
         friend_list_data=friend_list_data,  # ✅ untuk sidebar/online users
         user=current_user,
-        pending_count = pending_count
+        pending_count = pending_count,
+        total_posts=total_posts_count,
     )
 
 

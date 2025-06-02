@@ -188,19 +188,15 @@
         object-fit: cover;
         display: block;
       }
-      #image-preview {
-        position: relative;
-        border-radius: 8px;
-        overflow: hidden;
-        display: block; /* jadi block-level */
+      /* container scroll */
+      .modal-body-scroll {
+        max-height: 60vh;
+        overflow-y: auto;
       }
 
-      #image-preview img {
-        display: block;
-        max-width: 100%;
-        height: auto;
-        width: 450px;
-        height: 362px;
+      /* hide file input */
+      #file-upload {
+        display: none;
       }
 
       .btn-overlay {
@@ -221,16 +217,96 @@
         align-items: center;
         gap: 4px;
       }
-
-      .close-btn {
-        top: 10px;
-        left: 410px;
-        font-size: 1.25rem;
-        line-height: 1;
-        width: 28px;
-        height: 28px;
-        padding: 0;
+      #loader {
+        display: none;
       }
+      /* Container untuk semua tag “Ditandai” */
+      #selectedFriendsContainer {
+        border: 1px solid #ddd; /* border tipis abu‐abu */
+        border-radius: 8px; /* sudut sedikit membulat */
+        padding: 8px; /* ruang di dalam kotak */
+        background-color: #fff; /* latar putih */
+        margin-bottom: 16px; /* jarak ke elemen di bawahnya */
+      }
+
+      /* Wrapper tempat tag‐tag ditampilkan */
+      #selectedFriends {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px; /* jarak antar tag */
+      }
+
+      /* Style untuk masing‐masing “pill” (tag) */
+      .tag-pill {
+        display: inline-flex;
+        align-items: center;
+        background-color: #dcf4ff; /* biru pucat (bisa disesuaikan) */
+        color: #055c99; /* teks biru tua agar kontras */
+        border-radius: 12px; /* bentuk oval/membulat */
+        padding: 4px 10px; /* ruang vertikal & horizontal */
+        font-size: 0.9rem;
+        font-weight: 500;
+        /* Box‐shadow tipis (opsional) agar agak terangkat */
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Style untuk ikon “×” dalam tag */
+      .tag-pill .remove-tag {
+        margin-left: 6px; /* jarak antara teks nama dan “×” */
+        cursor: pointer;
+        font-weight: bold;
+        color: #055c99; /* sama warna teks tag */
+        font-size: 1rem;
+        line-height: 1;
+      }
+
+      /* Saat hover pada teks “×”, warnanya menjadi sedikit lebih gelap */
+      .tag-pill .remove-tag:hover {
+        color: #003e66;
+      }
+
+      /* ----------------------------------- */
+      /* Untuk menyesuaikan tampilan field Cari */
+      /* ----------------------------------- */
+      #searchFriendInput {
+        border-radius: 50px; /* bulat penuh */
+        height: 38px; /* lebih ringkas */
+        font-size: 0.95rem;
+      }
+
+      /* Ganti warna background input cari menjadi abu‐abu muda */
+      #searchFriendInput {
+        background-color: #f1f3f5;
+      }
+
+      /* Placeholder teks menjadi sedikit abu‐abu lebih gelap */
+      #searchFriendInput::placeholder {
+        color: #777;
+      }
+
+      /* ----------------------------------- */
+      /* Styling untuk daftar “Saran” tiap teman */
+      /* ----------------------------------- */
+      #friendList .list-group-item {
+        border: none; /* hilangkan border default */
+        border-bottom: 1px solid #eee; /* border bawah tipis */
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out;
+      }
+
+      /* Hapus border bawah untuk item terakhir */
+      #friendList .list-group-item:last-child {
+        border-bottom: none;
+      }
+
+      /* Saat hover pada nama teman di “Saran” */
+      #friendList .list-group-item:hover {
+        background-color: #f8f9fa;
+      }
+
+      /* Gaya ketika item di‐klik / terpilih, kita set display:none di JS */
+      /* Jadi tidak perlu style khusus di sini */
     </style>
   </head>
   <body class="  ">
@@ -416,7 +492,7 @@
                     aria-labelledby="post-modalLabel"
                     aria-hidden="true"
                   >
-                    <div class="modal-dialog modal-fullscreen-sm-down">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
                       <div class="modal-content">
                         <div class="modal-header">
                           <h5 class="modal-title" id="post-modalLabel">
@@ -430,86 +506,181 @@
                             <i class="ri-close-fill"></i>
                           </button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body modal-body-scroll">
+                          <!-- ======= Form Posting ======= -->
                           <form
-                            class="post-text"
                             action="/post"
                             method="POST"
                             enctype="multipart/form-data"
                           >
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-start mb-3">
+                              <!-- 1) Avatar Kiri -->
                               <div class="user-img">
                                 <img
-                                  src="static/assets/images/user/1.jpg"
+                                  src="{{ user.profile_picture or url_for('static', filename='assets/images/user/11.png') }}"
                                   alt="userimg"
-                                  class="avatar-60 rounded-circle img-fluid"
+                                  class="avatar-50 rounded-circle img-fluid"
                                 />
                               </div>
-                              <input
-                                type="text"
-                                name="text"
-                                class="form-control rounded ms-3 w-100"
-                                placeholder="Write something here..."
-                                style="border: none"
-                              />
+
+                              <!-- 2) Kolom Konten Kanan -->
+                              <div class="ms-3 flex-grow-1">
+                                <!-- 2a) Baris Nama -->
+                                <h6 class="mb-1">
+                                  {{ full_name }}
+                                  <span
+                                    id="taggedDisplay"
+                                    class="text-secondary"
+                                    style="
+                                      font-weight: 500;
+                                      font-size: 0.9rem;
+                                      display: none;
+                                    "
+                                  ></span>
+                                </h6>
+
+                                <!-- 2b) Baris Dropdown “Teman” (di bawah nama) -->
+                                <div class="dropdown mb-2">
+                                  <button
+                                    class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                    type="button"
+                                    id="privacyDropdown"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                  >
+                                    <i class="bi bi-people-fill me-1"></i> Teman
+                                  </button>
+                                  <ul
+                                    class="dropdown-menu"
+                                    aria-labelledby="privacyDropdown"
+                                  >
+                                    <li>
+                                      <a
+                                        class="dropdown-item"
+                                        href="#"
+                                        data-value="Publik"
+                                        >Publik</a
+                                      >
+                                    </li>
+                                    <li>
+                                      <a
+                                        class="dropdown-item"
+                                        href="#"
+                                        data-value="Teman"
+                                        >Teman</a
+                                      >
+                                    </li>
+                                    <li>
+                                      <a
+                                        class="dropdown-item"
+                                        href="#"
+                                        data-value="Hanya Saya"
+                                        >Hanya Saya</a
+                                      >
+                                    </li>
+                                  </ul>
+                                  <input
+                                    type="hidden"
+                                    name="privasi"
+                                    id="privacyInput"
+                                    value="Publik"
+                                  />
+                                </div>
+
+                                <!-- 2c) Baris Input Teks (di bawah dropdown) -->
+                                <input
+                                  type="text"
+                                  name="text"
+                                  class="form-control rounded w-100 ps-0"
+                                  placeholder="Apa yang Anda pikirkan, Habib?"
+                                  style="border: none"
+                                />
+                              </div>
                             </div>
 
-                            <!-- pindahkan preview ke sini, di bawah flex container -->
-                            <div
-                              id="image-preview"
-                              class="my-3"
+                            <!-- File input (hidden) -->
+                            <input
+                              type="file"
+                              id="upload-input"
+                              name="image"
+                              accept="image/*"
                               style="display: none"
+                            />
+                            <!-- Container preview (diubah id-nya) -->
+                            <div
+                              id="placeholder"
+                              style="
+                                display: none;
+                                position: relative;
+                                margin-top: 1rem;
+                                border: 2px dashed #ccc;
+                                border-radius: 8px;
+                                padding: 1rem;
+                                text-align: center;
+                                cursor: pointer;
+                                margin-bottom: 30px;
+                              "
                             >
-                              <button class="btn-overlay edit-btn">
-                                <i class="ri-image-add-fill"></i> Tambahkan
-                                foto/video
-                              </button>
-                              <button class="btn-overlay close-btn">
+                              <button
+                                type="button"
+                                class="close-btn"
+                                id="remove-img"
+                                style="
+                                  position: absolute;
+                                  top: 25px;
+                                  right: 25px;
+                                  background: #ffffff;
+                                  border: none;
+                                  font-size: 1rem;
+                                  cursor: pointer;
+                                  border-radius: 9999px; /* full round */
+                                  width: 32px;
+                                  height: 32px;
+                                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+                                  display: flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                  padding: 0;
+                                "
+                              >
                                 &times;
                               </button>
+
                               <img
                                 id="preview-img"
                                 src=""
-                                class="img-fluid rounded"
                                 alt="Preview"
+                                style="
+                                  max-width: 100%;
+                                  height: auto;
+                                  border-radius: 4px;
+                                "
                               />
                             </div>
-
                             <hr />
 
+                            <!-- Tombol Photo/Video -->
                             <ul class="row list-unstyled m-0">
                               <li class="col-md-6 mb-3 position-relative">
-                                <label
-                                  for="file-upload"
+                                <a
+                                  href="javascript:void(0)"
+                                  id="btn-upload"
                                   class="upload-option"
-                                  style="cursor: pointer"
+                                  role="button"
                                 >
+                                  <!-- Icon -->
                                   <img
                                     src="static/assets/images/small/07.png"
                                     alt="icon"
                                     width="24"
                                     height="24"
                                   />
-                                  Photo/Video
-                                </label>
-                                <input
-                                  type="file"
-                                  id="file-upload"
-                                  name="image"
-                                  accept="image/*"
-                                  style="
-                                    position: absolute;
-                                    top: 0;
-                                    left: 0;
-                                    width: 100%;
-                                    height: 100%;
-                                    opacity: 0;
-                                    cursor: pointer;
-                                  "
-                                />
-                              </li>
+                                  Foto / Video
 
-                              <li class="col-md-6 mb-3">
+                                  <!-- Jarak kiri teks terhadap icon -->
+                                </a>
+                              </li>
+                              <li class="col-md-6 mb-3 position-relative">
                                 <a
                                   href=""
                                   class="upload-option"
@@ -526,6 +697,12 @@
                                   Tag Friend
                                 </a>
                               </li>
+                              <input
+                                type="hidden"
+                                name="tag_users"
+                                id="tagged_users_input"
+                                value="[]"
+                              />
 
                               <li class="col-md-6 mb-3">
                                 <a
@@ -703,297 +880,319 @@
                   </div>
                 </div>
               </div>
-              {% for post in posts %}
-              <div class="col-sm-12">
-                <div class="card card-block card-stretch card-height">
-                  <div class="card-body">
-                    <div class="user-post-data">
-                      <div class="d-flex justify-content-between">
-                        <div class="me-3">
-                          <img
-                            class="rounded-circle img-fluid"
-                            src="static/assets/images/user/01.jpg"
-                            alt=""
-                          />
-                        </div>
-                        <div class="w-100">
-                          <div class="d-flex justify-content-between">
-                            <div class="">
-                              <h5 class="mb-0 d-inline-block">
-                                {{ post.full_name }}
-                              </h5>
-                              <p class="mb-0 text-primary">
-                                {{ post.timestamp|naturaltime }}
-                              </p>
-                            </div>
-                            <div class="card-post-toolbar">
-                              <div class="dropdown">
-                                <span
-                                  class="dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                  aria-haspopup="true"
-                                  aria-expanded="false"
-                                  role="button"
-                                >
-                                  <i class="ri-more-fill"></i>
-                                </span>
-                                <div class="dropdown-menu m-0 p-0">
-                                  <a class="dropdown-item p-3" href="#">
-                                    <div class="d-flex align-items-top">
-                                      <div class="h4">
-                                        <i class="ri-save-line"></i>
+              <div id="post-container">
+                {% for post in posts %}
+                <div class="col-sm-12">
+                  <div class="card card-block card-stretch card-height">
+                    <div class="card-body">
+                      <div class="user-post-data">
+                        <div class="d-flex justify-content-between">
+                          <div class="me-3">
+                            <img
+                              class="rounded-circle img-fluid"
+                              src="static/assets/images/user/01.jpg"
+                              alt=""
+                            />
+                          </div>
+                          <div class="w-100">
+                            <div class="d-flex justify-content-between">
+                              <div class="">
+                                <h5 class="mb-0 d-inline-block">
+                                  {{ post.full_name }}
+                                </h5>
+                                <p class="mb-0 text-primary">
+                                  {{ post.timestamp|naturaltime }} {% if
+                                  post.privasi == "Publik" %}
+                                  <!-- Contoh menggunakan Font Awesome: ikon "user-friends"  -->
+                                  <i
+                                    class="bi bi-globe text-secondary ms-1"
+                                    title="Publik"
+                                    style="font-size: 0.9em"
+                                  ></i>
+                                  {% elif post.privasi == "Teman"%}
+                                  <i
+                                    class="bi bi-people text-secondary ms-1"
+                                    title="Teman Anda"
+                                    style="font-size: 0.9em"
+                                  ></i>
+                                  {% elif post.privasi == "Hanya Saya"%}
+                                  <i
+                                    class="bi bi-lock text-secondary ms-1"
+                                    title="Hanya Saya"
+                                    style="font-size: 0.9em"
+                                  ></i>
+                                  {% endif %}
+                                </p>
+                              </div>
+                              <div class="card-post-toolbar">
+                                <div class="dropdown">
+                                  <span
+                                    class="dropdown-toggle"
+                                    data-bs-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                    role="button"
+                                  >
+                                    <i class="ri-more-fill"></i>
+                                  </span>
+                                  <div class="dropdown-menu m-0 p-0">
+                                    <a class="dropdown-item p-3" href="#">
+                                      <div class="d-flex align-items-top">
+                                        <div class="h4">
+                                          <i class="ri-save-line"></i>
+                                        </div>
+                                        <div class="data ms-2">
+                                          <h6>Save Post</h6>
+                                          <p class="mb-0">
+                                            Add this to your saved items
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div class="data ms-2">
-                                        <h6>Save Post</h6>
-                                        <p class="mb-0">
-                                          Add this to your saved items
-                                        </p>
+                                    </a>
+                                    <a class="dropdown-item p-3" href="#">
+                                      <div class="d-flex align-items-top">
+                                        <i class="ri-close-circle-line h4"></i>
+                                        <div class="data ms-2">
+                                          <h6>Hide Post</h6>
+                                          <p class="mb-0">
+                                            See fewer posts like this.
+                                          </p>
+                                        </div>
                                       </div>
-                                    </div>
-                                  </a>
-                                  <a class="dropdown-item p-3" href="#">
-                                    <div class="d-flex align-items-top">
-                                      <i class="ri-close-circle-line h4"></i>
-                                      <div class="data ms-2">
-                                        <h6>Hide Post</h6>
-                                        <p class="mb-0">
-                                          See fewer posts like this.
-                                        </p>
+                                    </a>
+                                    <a class="dropdown-item p-3" href="#">
+                                      <div class="d-flex align-items-top">
+                                        <i class="ri-user-unfollow-line h4"></i>
+                                        <div class="data ms-2">
+                                          <h6>Unfollow User</h6>
+                                          <p class="mb-0">
+                                            Stop seeing posts but stay friends.
+                                          </p>
+                                        </div>
                                       </div>
-                                    </div>
-                                  </a>
-                                  <a class="dropdown-item p-3" href="#">
-                                    <div class="d-flex align-items-top">
-                                      <i class="ri-user-unfollow-line h4"></i>
-                                      <div class="data ms-2">
-                                        <h6>Unfollow User</h6>
-                                        <p class="mb-0">
-                                          Stop seeing posts but stay friends.
-                                        </p>
+                                    </a>
+                                    <a class="dropdown-item p-3" href="#">
+                                      <div class="d-flex align-items-top">
+                                        <i class="ri-notification-line h4"></i>
+                                        <div class="data ms-2">
+                                          <h6>Notifications</h6>
+                                          <p class="mb-0">
+                                            Turn on notifications for this post
+                                          </p>
+                                        </div>
                                       </div>
-                                    </div>
-                                  </a>
-                                  <a class="dropdown-item p-3" href="#">
-                                    <div class="d-flex align-items-top">
-                                      <i class="ri-notification-line h4"></i>
-                                      <div class="data ms-2">
-                                        <h6>Notifications</h6>
-                                        <p class="mb-0">
-                                          Turn on notifications for this post
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </a>
+                                    </a>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="mt-3">
-                      <p>{{ post.text }}</p>
-                    </div>
-                    <div class="user-post">
-                      {% if post.image is string %}
-                      <img
-                        src="{{ post.image.replace('\\', '/') }}"
-                        alt="post-image"
-                        class="img-fluid rounded w-100"
-                      />
-                      {% elif post.image|length == 1 %}
-                      <img
-                        src="{{ post.image[0].replace('\\', '/') }}"
-                        alt="post-image"
-                        class="img-fluid rounded w-100"
-                      />
-                      {% else %}
-                      <div class="d-grid grid-rows-2 grid-flow-col gap-3">
-                        {% for image in post.image %}
-                        <div class="row-span-1">
-                          <img
-                            src="{{ image.replace('\\', '/') }}"
-                            alt="post-image"
-                            class="img-fluid rounded w-100"
-                          />
-                        </div>
-                        {% endfor %}
+                      <div class="mt-3">
+                        <p>{{ post.text }}</p>
                       </div>
-                      {% endif %}
-                    </div>
-                    <div class="comment-area mt-3">
-                      <div
-                        class="d-flex justify-content-between align-items-center flex-wrap"
-                      >
+                      <div class="user-post">
+                        {% if post.image is string %}
+                        <img
+                          src="{{ post.image.replace('\\', '/') }}"
+                          alt="post-image"
+                          class="img-fluid rounded w-100"
+                        />
+                        {% elif post.image|length == 1 %}
+                        <img
+                          src="{{ post.image[0].replace('\\', '/') }}"
+                          alt="post-image"
+                          class="img-fluid rounded w-100"
+                        />
+                        {% else %}
+                        <div class="d-grid grid-rows-2 grid-flow-col gap-3">
+                          {% for image in post.image %}
+                          <div class="row-span-1">
+                            <img
+                              src="{{ image.replace('\\', '/') }}"
+                              alt="post-image"
+                              class="img-fluid rounded w-100"
+                            />
+                          </div>
+                          {% endfor %}
+                        </div>
+                        {% endif %}
+                      </div>
+                      <div class="comment-area mt-3">
                         <div
-                          class="like-block position-relative d-flex align-items-center"
+                          class="d-flex justify-content-between align-items-center flex-wrap"
                         >
-                          <div class="d-flex align-items-center">
-                            <div class="like-data">
-                              <div class="dropdown">
-                                <span
-                                  class="dropdown-toggle"
-                                  data-bs-toggle="dropdown"
-                                >
-                                  <img
-                                    id="reaction-icon-{{ post._id }}"
-                                    src="{{ url_for('static', filename='assets/images/icon/' + '%02d' % (['like','love','happy','haha','think','sad','lovely'].index(post.user_reaction or 'like') + 1) + '.png') }}"
-                                    class="img-fluid"
-                                    alt=""
-                                  />
-                                </span>
-                                <div class="dropdown-menu py-2">
-                                  {% for reaction in
-                                  ['like','love','happy','haha','think','sad','lovely']
-                                  %}
-                                  <a
-                                    class="me-2"
-                                    href="#"
-                                    onclick="reactToPost('{{ post._id }}', '{{ reaction }}')"
+                          <div
+                            class="like-block position-relative d-flex align-items-center"
+                          >
+                            <div class="d-flex align-items-center">
+                              <div class="like-data">
+                                <div class="dropdown">
+                                  <span
+                                    class="dropdown-toggle"
+                                    data-bs-toggle="dropdown"
                                   >
                                     <img
-                                      src="{{ url_for('static', filename='assets/images/icon/' + '%02d' % loop.index + '.png') }}"
+                                      id="reaction-icon-{{ post._id }}"
+                                      src="{{ url_for('static', filename='assets/images/icon/' + '%02d' % (['like','love','happy','haha','think','sad','lovely'].index(post.user_reaction or 'like') + 1) + '.png') }}"
                                       class="img-fluid"
-                                      title="{{ reaction|capitalize }}"
+                                      alt=""
                                     />
-                                  </a>
-                                  {% endfor %}
+                                  </span>
+                                  <div class="dropdown-menu py-2">
+                                    {% for reaction in
+                                    ['like','love','happy','haha','think','sad','lovely']
+                                    %}
+                                    <a
+                                      class="me-2"
+                                      href="#"
+                                      onclick="reactToPost('{{ post._id }}', '{{ reaction }}')"
+                                    >
+                                      <img
+                                        src="{{ url_for('static', filename='assets/images/icon/' + '%02d' % loop.index + '.png') }}"
+                                        class="img-fluid"
+                                        title="{{ reaction|capitalize }}"
+                                      />
+                                    </a>
+                                    {% endfor %}
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="total-like-block ms-2 me-3">
+                                <div class="dropdown">
+                                  <span
+                                    class="dropdown-toggle"
+                                    data-bs-toggle="dropdown"
+                                    role="button"
+                                  >
+                                    {{ post.like_count }} Likes
+                                  </span>
+                                  <div class="dropdown-menu">
+                                    {% if post.liked_users %} {% for name in
+                                    post.liked_users %}
+                                    <a class="dropdown-item" href="#"
+                                      >{{ name }}</a
+                                    >
+                                    {% endfor %} {% else %}
+                                    <a
+                                      class="dropdown-item disabled text-muted"
+                                      href="#"
+                                      >Belum ada yang menyukai</a
+                                    >
+                                    {% endif %}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <div class="total-like-block ms-2 me-3">
+                            <div class="total-comment-block">
                               <div class="dropdown">
                                 <span
                                   class="dropdown-toggle"
                                   data-bs-toggle="dropdown"
                                   role="button"
+                                  >{{ post.komentar_count }} Komentar</span
                                 >
-                                  {{ post.like_count }} Likes
-                                </span>
                                 <div class="dropdown-menu">
-                                  {% if post.liked_users %} {% for name in
-                                  post.liked_users %}
-                                  <a class="dropdown-item" href="#"
-                                    >{{ name }}</a
-                                  >
+                                  {% if post.komentar_list %} {% for komentar in
+                                  post.komentar_list %}
+                                  <a class="dropdown-item" href="#">
+                                    {{ komentar.full_name}}
+                                  </a>
                                   {% endfor %} {% else %}
                                   <a
                                     class="dropdown-item disabled text-muted"
                                     href="#"
-                                    >Belum ada yang menyukai</a
                                   >
+                                    Belum ada yang komentar
+                                  </a>
                                   {% endif %}
                                 </div>
                               </div>
                             </div>
                           </div>
-                          <div class="total-comment-block">
-                            <div class="dropdown">
-                              <span
-                                class="dropdown-toggle"
-                                data-bs-toggle="dropdown"
-                                role="button"
-                                >{{ post.komentar_count }} Komentar</span
-                              >
-                              <div class="dropdown-menu">
-                                {% if post.komentar_list %} {% for komentar in
-                                post.komentar_list %}
-                                <a class="dropdown-item" href="#">
-                                  {{ komentar.full_name}}
-                                </a>
-                                {% endfor %} {% else %}
-                                <a
-                                  class="dropdown-item disabled text-muted"
-                                  href="#"
-                                >
-                                  Belum ada yang komentar
-                                </a>
-                                {% endif %}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          class="share-block d-flex align-items-center feather-icon mt-2 mt-md-0"
-                        >
-                          <a
-                            href="javascript:void(0);"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#share-btn"
-                            ><i class="ri-share-line"></i
-                            ><span class="ms-1">99 Share</span></a
+                          <div
+                            class="share-block d-flex align-items-center feather-icon mt-2 mt-md-0"
                           >
+                            <a
+                              href="javascript:void(0);"
+                              data-bs-toggle="offcanvas"
+                              data-bs-target="#share-btn"
+                              ><i class="ri-share-line"></i
+                              ><span class="ms-1">99 Share</span></a
+                            >
+                          </div>
                         </div>
-                      </div>
-                      <hr />
-                      <!-- Comments -->
-                      <ul class="post-comments list-inline p-0 m-0">
-                        {% for komentar in post.komentar_list %}
-                        <li class="mb-2">
-                          <div class="d-flex">
-                            <div class="user-img">
-                              <img
-                                src="{{ komentar.avatar or url_for('static', filename='static/assets/images/user/01.jpg') }}"
-                                alt="userimg"
-                                class="avatar-35 rounded-circle img-fluid"
-                              />
-                            </div>
-                            <div class="comment-data-block ms-3">
-                              <h6>{{ komentar.full_name }}</h6>
-                              <p class="mb-0">{{ komentar.komentar }}</p>
-                              <div
-                                class="d-flex flex-wrap align-items-center comment-activity"
-                              >
-                                <a href="#">like</a>
-                                <a href="#">reply</a>
-                                <a href="#">translate</a>
-                                <span
-                                  >{{ komentar.timestamp|naturaltime }}</span
+                        <hr />
+                        <!-- Comments -->
+                        <ul class="post-comments list-inline p-0 m-0">
+                          {% for komentar in post.komentar_list %}
+                          <li class="mb-2">
+                            <div class="d-flex">
+                              <div class="user-img">
+                                <img
+                                  src="{{ komentar.avatar or url_for('static', filename='static/assets/images/user/01.jpg') }}"
+                                  alt="userimg"
+                                  class="avatar-35 rounded-circle img-fluid"
+                                />
+                              </div>
+                              <div class="comment-data-block ms-3">
+                                <h6>{{ komentar.full_name }}</h6>
+                                <p class="mb-0">{{ komentar.komentar }}</p>
+                                <div
+                                  class="d-flex flex-wrap align-items-center comment-activity"
                                 >
+                                  <a href="#">like</a>
+                                  <a href="#">reply</a>
+                                  <a href="#">translate</a>
+                                  <span
+                                    >{{ komentar.timestamp|naturaltime }}</span
+                                  >
+                                </div>
                               </div>
                             </div>
+                          </li>
+                          {% else %}
+                          <li>
+                            <div class="text-muted">Belum ada komentar.</div>
+                          </li>
+                          {% endfor %}
+                        </ul>
+                        <!-- Input -->
+                        <form
+                          class="mt-2"
+                          action="{{ url_for('kirim_komentar', post_id=post._id) }}"
+                          method="POST"
+                        >
+                          <div class="comment-box">
+                            <input
+                              type="text"
+                              id="commentInput"
+                              name="komentar"
+                              placeholder="Tulis komentar..."
+                            />
+                            <div class="comment-actions">
+                              <a href="#" onclick="openAttachment('link')"
+                                ><i class="ri-link"></i
+                              ></a>
+                              <a href="#" onclick="openEmojiPicker()"
+                                ><i class="ri-user-smile-line"></i
+                              ></a>
+                              <a href="#" onclick="openEmojiPicker()"
+                                ><i class="ri-camera-line"></i
+                              ></a>
+                              <button type="submit" class="comment-send-btn">
+                                <i class="ri-send-plane-fill"></i>
+                              </button>
+                            </div>
                           </div>
-                        </li>
-                        {% else %}
-                        <li>
-                          <div class="text-muted">Belum ada komentar.</div>
-                        </li>
-                        {% endfor %}
-                      </ul>
-                      <!-- Input -->
-                      <form
-                        class="mt-2"
-                        action="{{ url_for('kirim_komentar', post_id=post._id) }}"
-                        method="POST"
-                      >
-                        <div class="comment-box">
-                          <input
-                            type="text"
-                            id="commentInput"
-                            name="komentar"
-                            placeholder="Tulis komentar..."
-                          />
-                          <div class="comment-actions">
-                            <a href="#" onclick="openAttachment('link')"
-                              ><i class="ri-link"></i
-                            ></a>
-                            <a href="#" onclick="openEmojiPicker()"
-                              ><i class="ri-user-smile-line"></i
-                            ></a>
-                            <a href="#" onclick="openEmojiPicker()"
-                              ><i class="ri-camera-line"></i
-                            ></a>
-                            <button type="submit" class="comment-send-btn">
-                              <i class="ri-send-plane-fill"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </form>
+                        </form>
+                      </div>
                     </div>
                   </div>
                 </div>
+                {% endfor %}
               </div>
-              {% endfor %}
             </div>
             <div class="col-lg-4">
               <div class="card">
@@ -1261,12 +1460,89 @@
                 </div>
               </div>
             </div>
-            <div class="col-sm-12 text-center">
+            <div class="col-sm-12 text-center" id="loader">
               <img
                 src="static/assets/images/page-img/page-load-loader.gif"
                 alt="loader"
                 style="height: 100px"
               />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="uploadModal"
+      tabindex="-1"
+      aria-labelledby="uploadModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="uploadModalLabel">Unggah Foto/Video</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Tutup"
+            ></button>
+          </div>
+          <div class="modal-body" style="max-height: 80vh; overflow-y: auto">
+            <!-- Area drag-drop upload -->
+            <div
+              id="upload-area"
+              style="
+                border: 2px dashed #ccc;
+                border-radius: 10px;
+                padding: 30px;
+                text-align: center;
+              "
+            >
+              <label for="file-upload" style="cursor: pointer">
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/189/189664.png"
+                  alt="upload"
+                  width="40"
+                />
+                <p style="margin: 10px 0">
+                  Tambahkan foto/video<br /><small
+                    >atau seret dan letakkan</small
+                  >
+                </p>
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                style="display: none"
+              />
+            </div>
+
+            <!-- Preview setelah upload -->
+            <div
+              id="image-preview"
+              style="margin-top: 20px; display: none; position: relative"
+            >
+              <img
+                id="preview-img"
+                src="#"
+                class="img-fluid rounded"
+                style="max-width: 100%"
+              />
+              <!-- Overlay tombol -->
+              <div style="position: absolute; top: 10px; right: 10px">
+                <button
+                  class="btn btn-light btn-sm"
+                  onclick="document.getElementById('file-upload').click()"
+                >
+                  Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="removeImage()">
+                  ×
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1288,7 +1564,6 @@
             <button
               type="button"
               class="btn btn-light rounded-circle p-2 shadow-sm me-2"
-              id="backToPost"
               data-bs-dismiss="modal"
               aria-label="Close"
               style="width: 36px; height: 36px"
@@ -1296,18 +1571,33 @@
               <i class="fas fa-arrow-left text-dark" style="display: flex"></i>
             </button>
             <h5 class="modal-title w-100 text-center" id="tagFriendModalLabel">
-              Tandai orang
+              Tandai Orang
             </h5>
             <div style="width: 32px"></div>
           </div>
+
           <div class="modal-body">
+            <!-- 1. Area “Ditandai” (Awalnya kosong, muncul setelah klik saran) -->
+            <div
+              id="selectedFriendsContainer"
+              class="mb-3"
+              style="display: none"
+            >
+              <p class="text-uppercase text-muted fw-bold small mb-2">
+                Ditandai
+              </p>
+              <div id="selectedFriends" class="d-flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- 2. Form Cari Teman -->
             <form class="d-flex align-items-center gap-2 mb-3">
-              <div class="input-group rounded-pill bg-light">
+              <div class="input-group rounded-pill bg-light flex-grow-1">
                 <span class="input-group-text bg-light border-0">
                   <i class="fas fa-search text-muted"></i>
                 </span>
                 <input
                   type="search"
+                  id="searchFriendInput"
                   class="form-control border-0 bg-light"
                   placeholder="Cari"
                 />
@@ -1315,417 +1605,671 @@
               <button
                 class="btn btn-link text-primary fw-medium text-decoration-none"
                 type="button"
+                id="doneTagging"
+                data-bs-dismiss="modal"
               >
                 Selesai
               </button>
             </form>
 
+            <!-- 3. Daftar Saran Teman (Looping dinamis) -->
             <p class="text-uppercase text-muted fw-bold small mb-2">Saran</p>
-            <div class="d-flex align-items-center gap-2">
-              <img
-                src="https://storage.googleapis.com/a1aa/image/98ec3c23-d40b-4abb-cac7-e6875d76a242.jpg"
-                alt="User"
-                class="rounded-circle"
-                width="32"
-                height="32"
-              />
-              <span class="fw-semibold text-dark">AsepMustofah</span>
+            <div
+              id="friendList"
+              class="list-group"
+              style="max-height: 300px; overflow-y: auto"
+            >
+              {% for friend in friend_list_data %}
+              <label
+                class="list-group-item d-flex align-items-center suggestion-item"
+                data-id="{{ friend._id }}"
+                data-name="{{ friend.full_name }}"
+              >
+                <img
+                  src="{{ friend.profile_picture }}"
+                  alt="User"
+                  class="rounded-circle me-2"
+                  width="32"
+                  height="32"
+                  style="object-fit: cover"
+                />
+                <span class="fw-semibold text-dark"
+                  >{{ friend.full_name }}</span
+                >
+              </label>
+              {% endfor %}
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Input hidden di form utama -->
+
     <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // =========================
+        // 1. Data Teman & Render Status Online/Offline
+        // =========================
+        const friendList = {{ friend_list_data | tojson | default('[]') }};
 
-                     // Ambil data teman dari server
-                     const friendList = {{ friend_list_data | tojson }};
+        function renderFriends(onlineIds) {
+          const container = document.querySelector(".media-height");
+          if (!container) return;
 
-                     // Render daftar teman dengan status online/offline
-                     function renderFriends(onlineIds) {
-                       const container = document.querySelector(".media-height");
-                       container.innerHTML = "";
+          container.innerHTML = ""; // Kosongkan dulu
+          friendList.forEach(f => {
+            const isOnline   = onlineIds.includes(f._id);
+            const dotClass   = isOnline ? "status-online" : "";
+            const statusText = isOnline ? "Online" : "Offline";
+            const profilePic = f.profile_picture; // Sudah berisi "/static/…"
 
-                       friendList.forEach(f => {
-                         const isOnline   = onlineIds.includes(f._id);
-                         const dotClass   = isOnline ? "status-online" : "";
-                         const statusText = isOnline ? "Online" : "Offline";
-                         const profilePic = f.profile_picture; // Sudah berisi "/static/…"
+            const html = `
+              <div class="d-flex align-items-center mb-4"
+                   onclick="openChat('${f._id}', '${f.full_name}', '${profilePic}')">
+                <div class="iq-profile-avatar ${dotClass}">
+                  <img class="rounded-circle avatar-50"
+                       src="${profilePic}"
+                       alt="${f.full_name}" />
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-0">${f.full_name}</h6>
+                  <p class="mb-0">${statusText}</p>
+                </div>
+              </div>
+            `;
+            container.insertAdjacentHTML("beforeend", html);
+          });
+        }
 
-                         console.log("Profile Pic Path:", profilePic);
+        // Render awal (semua offline)
+        renderFriends([]);
 
-                         const html = `
-                           <div class="d-flex align-items-center mb-4"
-                                onclick="openChat('${f._id}', '${f.full_name}', '${profilePic}')">
-                             <div class="iq-profile-avatar ${dotClass}">
-                               <img class="rounded-circle avatar-50"
-                                    src="${profilePic}"
-                                    alt="${f.full_name}" />
-                             </div>
-                             <div class="ms-3">
-                               <h6 class="mb-0">${f.full_name}</h6>
-                               <p class="mb-0">${statusText}</p>
-                             </div>
-                           </div>
-                         `;
-                         container.insertAdjacentHTML("beforeend", html);
-                       });
-                     }
+        // =========================
+        // 2. Setup Socket.IO (untuk chat & status teman)
+        // =========================
+        const socket = io({
+          auth: {
+            user_id:   "{{ session.get('user_id') }}",
+            full_name: "{{ session.get('full_name') }}"
+          }
+        });
 
-                     // Inisialisasi: anggap semua teman offline
-                     renderFriends([]);
+        socket.on("connect", () => {
+          socket.emit("request_online_users");
+        });
 
-                     // Setup koneksi Socket.IO
-                     const socket = io({
-                       auth: {
-                         user_id:   "{{ session.get('user_id') }}",
-                         full_name: "{{ session.get('full_name') }}"
-                       }
-                     });
+        socket.on("online_users", users => {
+          const onlineIds = users.map(u => u.user_id);
+          renderFriends(onlineIds);
+        });
 
-                     socket.on("connect", () => {
-                       socket.emit("request_online_users");
-                     });
+        socket.on("user_connected",    () => socket.emit("request_online_users"));
+        socket.on("user_disconnected", () => socket.emit("request_online_users"));
 
-                     socket.on("online_users", users => {
-                       const onlineIds = users.map(u => u.user_id);
-                       renderFriends(onlineIds);
-                     });
+        // =========================
+        // 3. Terima Pesan Baru
+        // =========================
+        socket.on("new_message", data => {
+          const AES_KEY = "$afitri&D1N1";
+          let decryptedMessage;
+          try {
+            const bytes = CryptoJS.AES.decrypt(data.message, AES_KEY);
+            decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
+          } catch (err) {
+            console.error("❌ Gagal dekripsi pesan:", err);
+            decryptedMessage = "❗Pesan terenkripsi (gagal dekripsi)";
+          }
 
-                     socket.on("user_connected",    () => socket.emit("request_online_users"));
-                     socket.on("user_disconnected", () => socket.emit("request_online_users"));
+          const myId            = document.getElementById("sender-id") ? document.getElementById("sender-id").value : null;
+          const currentReceiver = document.getElementById("receiver-id") ? document.getElementById("receiver-id").value : null;
+          const isOwnMessage    = (data.sender_id === myId);
 
+          // Jika chat belum terbuka untuk pengirim, buka otomatis
+          if (!isOwnMessage && data.sender_id !== currentReceiver) {
+            openChat(data.sender_id, data.full_name, data.profile_picture);
+          }
 
-                     // Terima pesan baru
-                     socket.on("new_message", data => {
+          const chatBody = document.querySelector("#chat-box .flex-grow-1");
+          if (!chatBody) return;
 
-                        const AES_KEY = "$afitri&D1N1"; // HARUS sama
+          const wrapper = document.createElement("div");
+          wrapper.classList.add("d-flex", "mb-2",
+            isOwnMessage ? "justify-content-end" : "justify-content-start"
+          );
 
-                       let decryptedMessage;
-                       try {
-                        const bytes = CryptoJS.AES.decrypt(data.message, AES_KEY);
-                        decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
-                       } catch (err) {
-                        console.error("❌ Gagal dekripsi pesan:", err);
-                        decryptedMessage = "❗Pesan terenkripsi (gagal dekripsi)";
-                       }
+          // Render isi pesan
+          if (emojiOnly(decryptedMessage)) {
+            if (isOwnMessage) {
+              wrapper.innerHTML = `<div class="emoji-bubble-sent">${decryptedMessage}</div>`;
+            } else {
+              wrapper.innerHTML = `
+                <img src="${data.profile_picture}"
+                     class="rounded-circle me-2"
+                     width="32"
+                     height="32"
+                     style="margin-top:10px;"
+                     alt="${data.full_name}" />
+                <div class="emoji-bubble-received">${decryptedMessage}</div>
+              `;
+            }
+          } else if (decryptedMessage.includes("<img") && decryptedMessage.includes("gif")) {
+            if (isOwnMessage) {
+              wrapper.innerHTML = `<div>${decryptedMessage}</div>`;
+            } else {
+              wrapper.innerHTML = `
+                <img src="${data.profile_picture}"
+                     class="rounded-circle me-2"
+                     width="32"
+                     height="32"
+                     style="margin-top:10px;"
+                     alt="${data.full_name}" />
+                <div>${decryptedMessage}</div>
+              `;
+            }
+          } else {
+            if (isOwnMessage) {
+              wrapper.innerHTML = `
+                <div class="badge bg-primary text-wrap"
+                     style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
+                  ${decryptedMessage}
+                </div>`;
+            } else {
+              wrapper.innerHTML = `
+                <img src="${data.profile_picture}"
+                     class="rounded-circle me-2"
+                     width="32"
+                     height="32"
+                     alt="${data.full_name}" />
+                <span class="badge bg-primary text-wrap"
+                      style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
+                  ${decryptedMessage}
+                </span>`;
+            }
+          }
 
-                       console.log("📩 Dapat pesan:", decryptedMessage);
+          chatBody.appendChild(wrapper);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        });
 
-                       const myId             = document.getElementById("sender-id").value;
-                       const currentReceiver  = document.getElementById("receiver-id").value;
-                       const isOwnMessage     = data.sender_id === myId;
+        // =========================
+        // 4. Fungsi: Buka & Tutup Chat
+        // =========================
+        window.openChat = function (userId, fullName = "", profilePic = "") {
+          const chatBox = document.getElementById("chat-box");
+          if (!chatBox) return;
 
+          chatBox.style.display = "flex";
+          chatBox.classList.remove("chat-pop");
+          void chatBox.offsetWidth; // Trigger reflow
+          chatBox.classList.add("chat-pop");
 
-                       // Jika chat box belum terbuka untuk pengirim, buka otomatis
-                       if (!isOwnMessage && data.sender_id !== currentReceiver) {
-                         openChat(data.sender_id, data.full_name, data.profile_picture);
-                       }
+          const receiverInput = document.getElementById("receiver-id");
+          if (receiverInput) receiverInput.value = userId;
 
-                       // Buat elemen pesan
-                       const chatBody = document.querySelector("#chat-box .flex-grow-1");
-                       const wrapper  = document.createElement("div");
-                       wrapper.classList.add("d-flex", "mb-2",
-                         isOwnMessage
-                           ? "justify-content-end"
-                           : "justify-content-start"
-                       );
+          ["chat-profile-name", "chat-profile-name1"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && fullName) el.textContent = fullName;
+          });
+          ["chat-profile-picture", "chat-profile-picture1"].forEach(id => {
+            const img = document.getElementById(id);
+            if (img && profilePic) {
+              img.src = profilePic;
+              img.onerror = () => { img.src = "/static/default.png"; };
+            }
+          });
+        };
 
-                     // Render konten pesan
-                        if (emojiOnly(decryptedMessage)) {
-                          wrapper.innerHTML = isOwnMessage
-                            ? `<div class="emoji-bubble-sent">${decryptedMessage}</div>`
-                            : `
-                              <img src="${data.profile_picture}" class="rounded-circle me-2" width="32" height="32" style="margin-top:10px;" alt="">
-                              <div class="emoji-bubble-received">${decryptedMessage}</div>
-                            `;
-                        } else if (decryptedMessage.includes('<img') && decryptedMessage.includes('gif')) {
-                          wrapper.innerHTML = isOwnMessage
-                            ? `<div>${decryptedMessage}</div>`
-                            : `
-                              <img src="${data.profile_picture}" class="rounded-circle me-2" width="32" height="32" style="margin-top:10px;" alt="">
-                              <div>${decryptedMessage}</div>
-                            `;
-                        } else {
-                          wrapper.innerHTML = isOwnMessage
-                            ? `<div class="badge bg-primary text-wrap" style="padding:12px 20px; border-radius:20px; max-width:70%;font-size:14px;">
-                                ${decryptedMessage}
-                              </div>`
-                            : `
-                              <img src="${data.profile_picture}" class="rounded-circle me-2" width="32" height="32" alt="">
-                              <span class="badge bg-primary text-wrap" style="padding:12px 20px;border-radius:20px;max-width:70%;font-size:14px;">
-                                ${decryptedMessage}
-                              </span>
-                            `;
-                        }
+        window.closeChat = function () {
+          const chatBox = document.getElementById("chat-box");
+          if (!chatBox) return;
+          chatBox.style.display = "none";
+          chatBox.classList.remove("chat-pop");
+        };
 
-                       chatBody.appendChild(wrapper);
-                       chatBody.scrollTop = chatBody.scrollHeight;
-                     });
+        // =========================
+        // 5. Toggle Send/Like Button
+        // =========================
+        function toggleSendButton() {
+          const input   = document.getElementById("chat-input");
+          const likeBtn = document.getElementById("like-button");
+          const sendBtn = document.getElementById("send-button");
+          if (!input || !likeBtn || !sendBtn) return;
 
-                     // Buka chat dengan user tertentu
-                     function openChat(userId, fullName = "", profilePic = "") {
-                       const chatBox = document.getElementById("chat-box");
+          if (input.value.trim()) {
+            likeBtn.classList.add("d-none");
+            sendBtn.classList.remove("d-none");
+          } else {
+            likeBtn.classList.remove("d-none");
+            sendBtn.classList.add("d-none");
+          }
+        }
 
-                       // Tampilkan & animasi pop
-                       chatBox.style.display = "flex";
-                       chatBox.classList.remove("chat-pop");
-                       void chatBox.offsetWidth;
-                       chatBox.classList.add("chat-pop");
+        // =========================
+        // 6. Kirim Pesan
+        // =========================
+        function sendMessage() {
+          const AES_KEY      = "$afitri&D1N1";
+          const senderIdElem = document.getElementById("sender-id");
+          const receiverElem = document.getElementById("receiver-id");
+          const inputElem    = document.getElementById("chat-input");
 
-                       // Set hidden input receiver
-                       const receiverInput = document.getElementById("receiver-id");
-                       if (receiverInput) receiverInput.value = userId;
+          if (!senderIdElem || !receiverElem || !inputElem) return;
 
-                       // Update nama & foto header (dua lokasi berbeda)
-                       ["chat-profile-name", "chat-profile-name1"].forEach(id => {
-                         const el = document.getElementById(id);
-                         if (el && fullName) el.textContent = fullName;
-                       });
-                       ["chat-profile-picture", "chat-profile-picture1"].forEach(id => {
-                         const img = document.getElementById(id);
-                         if (img && profilePic) {
-                           img.src = profilePic;
-                           img.onerror = () => { img.src = "/static/default.png"; };
-                         }
-                       });
-                     }
+          const senderId   = senderIdElem.value;
+          const receiverId = receiverElem.value;
+          const rawMessage = inputElem.value.trim();
+          if (!rawMessage) return;
 
-                     // Tutup chat box
-                     function closeChat() {
-                       const chatBox = document.getElementById("chat-box");
-                       chatBox.style.display = "none";
-                       chatBox.classList.remove("chat-pop");
-                     }
+          const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
+          socket.emit("send_message", {
+            sender_id:   senderId,
+            receiver_id: receiverId,
+            message:     encryptedMessage
+          });
 
-                     // Toggle tombol send / like berdasarkan input
-                     function toggleSendButton() {
-                       const input      = document.getElementById("chat-input");
-                       const likeBtn    = document.getElementById("like-button");
-                       const sendBtn    = document.getElementById("send-button");
+          // Tampilkan langsung di sisi pengirim
+          const chatBody = document.querySelector("#chat-box .flex-grow-1");
+          if (chatBody) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("text-end", "mb-2");
+            messageElement.innerHTML = `
+              <span class="badge bg-primary text-wrap"
+                    style="padding: 10px 20px; border-radius: 20px; max-width: 70%; font-size: 14px;">
+                ${rawMessage}
+              </span>`;
+            chatBody.appendChild(messageElement);
+            chatBody.scrollTop = chatBody.scrollHeight;
+          }
 
-                       if (input.value.trim()) {
-                         likeBtn.classList.add("d-none");
-                         sendBtn.classList.remove("d-none");
-                       } else {
-                         likeBtn.classList.remove("d-none");
-                         sendBtn.classList.add("d-none");
-                       }
-                     }
+          inputElem.value = "";
+          toggleSendButton();
+        }
+        const sendBtnElem = document.getElementById("send-button");
+        if (sendBtnElem) {
+          sendBtnElem.addEventListener("click", sendMessage);
+        }
 
-                    function sendMessage() {
-                         const AES_KEY = "$afitri&D1N1"
-                         const senderId   = document.getElementById("sender-id")?.value;
-                         const receiverId = document.getElementById("receiver-id")?.value;
-                         const messageInput = document.getElementById("chat-input");
-                         const rawMessage = messageInput.value.trim();
-                         if (!rawMessage) return;
+        // =========================
+        // 7. Reaction ke Post
+        // =========================
+        window.reactToPost = function (postId, reaction) {
+          fetch(`/react/${postId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reaction })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.message === "Reaction updated successfully!") {
+              const iconMap = {
+                like:   "01.png",
+                love:   "02.png",
+                happy:  "03.png",
+                haha:   "04.png",
+                think:  "05.png",
+                sad:    "06.png",
+                lovely: "07.png"
+              };
+              const iconElem = document.querySelector(`#reaction-icon-${postId}`);
+              if (iconElem) {
+                iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
+              }
+            }
+          })
+          .catch(console.error);
+        };
 
-                         const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
+        // =========================
+        // 8. Tombol “Kembali” di Modal Tag Teman
+        // =========================
+        const backBtn = document.getElementById("backToPost");
+        if (backBtn) {
+          backBtn.addEventListener("click", function () {
+            const tagFriendModal  = bootstrap.Modal.getInstance(document.getElementById("tagFriendModal"));
+            const createPostModal = new bootstrap.Modal(document.getElementById("post-modal"));
+            if (tagFriendModal) tagFriendModal.hide();
+            if (createPostModal) createPostModal.show();
+          });
+        }
 
+        // =========================
+        // 9. Hide Loader Saat Load Selesai
+        // =========================
+        window.addEventListener("load", () => {
+          const loadingElem = document.getElementById("loading");
+          if (loadingElem) loadingElem.style.display = "none";
+        });
 
+        // =========================
+        // 10. Emoji Picker Setup
+        // =========================
+        const emojiBtn = document.querySelector('button[title="Emoji"]');
+        const picker   = document.getElementById("emoji-picker");
+        const chatInputElem = document.getElementById("chat-input");
 
-                         console.log("📤 Encrypted message:", { senderId, receiverId, rawMessage});
-                         console.log("🔐 Pesan terenkripsi:", encryptedMessage);
+        if (emojiBtn && picker) {
+          emojiBtn.addEventListener("click", () => {
+            picker.style.display = (picker.style.display === "none") ? "block" : "none";
+          });
+        }
+        if (picker && chatInputElem) {
+          picker.addEventListener("emoji-click", event => {
+            chatInputElem.value += event.detail.unicode;
+            chatInputElem.focus();
+            toggleSendButton();
+          });
+          document.addEventListener("click", e => {
+            if (!picker.contains(e.target) && !emojiBtn.contains(e.target)) {
+              picker.style.display = "none";
+            }
+          });
+        }
 
+        function emojiOnly(text) {
+          return /^\p{Extended_Pictographic}+$/u.test(text.trim());
+        }
 
-                       socket.emit("send_message", {
-                         sender_id:   senderId,
-                         receiver_id: receiverId,
-                         message: encryptedMessage
-                       });
+        // =========================
+        // 11. GIF SEARCH dengan GIPHY
+        // =========================
+        const gifBtn         = document.getElementById("gif-toggle-btn");
+        const gifContainer   = document.getElementById("gif-container");
+        const gifSearchInput = document.getElementById("gif-search");
+        const gifResults     = document.getElementById("gif-results");
+        const senderIdGlobal = "{{ session.get('user_id') }}";
 
-                         // Tampilkan langsung di sisi pengirim
-                         const chatBody = document.querySelector("#chat-box .flex-grow-1");
-                         const messageElement = document.createElement("div");
-                         messageElement.classList.add("text-end", "mb-2");
-                         messageElement.innerHTML = `
-                           <span class="badge bg-primary" style="padding: 10px 20px;
-                                                                 border-radius: 20px;
-                                                                 max-width: 70%;
-                                                                 font-size: 14px;">${rawMessage}</span>
-                         `;
+        if (gifBtn && gifContainer) {
+          gifBtn.addEventListener("click", () => {
+            gifContainer.style.display = (gifContainer.style.display === "none") ? "block" : "none";
+          });
+        }
 
-                         messageInput.value = '';
-                         toggleSendButton();
-                       }
+        if (gifSearchInput && gifResults) {
+          gifSearchInput.addEventListener("input", async () => {
+            const query = gifSearchInput.value.trim();
+            if (!query) {
+              gifResults.innerHTML = "";
+              return;
+            }
+            try {
+              const API_KEY = "HST1JijGbqLRqfdi2yT0NN98QIErIZjS";
+              const response = await fetch(
+                `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${encodeURIComponent(query)}&limit=10`
+              );
+              const data = await response.json();
+              gifResults.innerHTML = "";
 
-                       document.getElementById("send-button").addEventListener("click", sendMessage)
+              data.data.forEach(gif => {
+                const imgUrl = gif.images.fixed_height.url;
+                const imgEl  = document.createElement("img");
+                imgEl.src    = imgUrl;
+                imgEl.style.cursor = "pointer";
+                imgEl.classList.add("m-1");
+                imgEl.width  = 100;
+                imgEl.height = 100;
 
-                     // Reaction ke post
-                     function reactToPost(postId, reaction) {
-                       fetch(`/react/${postId}`, {
-                         method: "POST",
-                         headers: { "Content-Type": "application/json" },
-                         body: JSON.stringify({ reaction })
-                       })
-                       .then(res => res.json())
-                       .then(data => {
-                         if (data.message === "Reaction updated successfully!") {
-                           const iconMap = {
-                             like:  "01.png",
-                             love:  "02.png",
-                             happy: "03.png",
-                             haha:  "04.png",
-                             think: "05.png",
-                             sad:   "06.png",
-                             lovely:"07.png"
-                           };
-                           const icon = document.querySelector(`#reaction-icon-${postId}`);
-                           icon.src = `/static/assets/images/icon/${iconMap[reaction]}`;
-                         }
-                       })
-                       .catch(console.error);
-                     }
-                      document.getElementById("backToPost").addEventListener("click", function () {
-                      const tagFriendModal = bootstrap.Modal.getInstance(document.getElementById('tagFriendModal'));
-                      tagFriendModal.hide();
-
-                      const createPostModal = new bootstrap.Modal(document.getElementById('post-modal'));
-                      createPostModal.show();
-                     });
-
-                     // Hide loader on load
-                     window.addEventListener("load", () => {
-                       document.getElementById("loading").style.display = "none";
-                     });
-
-                     // Emoji picker setup
-                     const emojiBtn = document.querySelector('button[title="Emoji"]');
-                     const picker   = document.getElementById("emoji-picker");
-                     const input    = document.getElementById("chat-input");
-
-                     emojiBtn.addEventListener("click", () => {
-                       picker.style.display = picker.style.display === "none" ? "block" : "none";
-                     });
-
-                     picker.addEventListener("emoji-click", event => {
-                       input.value += event.detail.unicode;
-                       input.focus();
-                       toggleSendButton();
-                     });
-
-                     document.addEventListener("click", e => {
-                       if (!picker.contains(e.target) && !emojiBtn.contains(e.target)) {
-                         picker.style.display = "none";
-                       }
-                     });
-
-                     function emojiOnly(text){
-                       return /^\p{Extended_Pictographic}+$/u.test(text.trim());
-                     }
-                  const gifBtn = document.getElementById("gif-toggle-btn");
-                  const gifContainer = document.getElementById("gif-container");
-                  const gifSearchInput = document.getElementById("gif-search");
-                  const gifResults = document.getElementById("gif-results");
-
-                  const senderId = "{{ session.get('user_id') }}";
-                  const receiverId = "{{ receiver_id }}";
-
-                  gifBtn.addEventListener("click", () => {
-                    gifContainer.style.display = gifContainer.style.display === "none" ? "block" : "none";
-                  });
-
-                  // Search GIF from GIPHY API
-                  gifSearchInput.addEventListener("input", async () => {
-                    const query = gifSearchInput.value.trim();
-                    if (!query) {
-                      gifResults.innerHTML = '';
-                      return;
-                    }
-
-                    try {
-                      const API_KEY = "HST1JijGbqLRqfdi2yT0NN98QIErIZjS"
-                      const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${query}&limit=10`);
-                      const data = await res.json();
-
-                      gifResults.innerHTML = '';
-
-                      data.data.forEach(gif => {
-                        const imgUrl = gif.images.fixed_height.url;
-                        const imgEl = document.createElement("img");
-                        imgEl.src = imgUrl;
-                        imgEl.style.cursor = "pointer";
-                        imgEl.classList.add("m-1");
-                        imgEl.width = 100;
-                        imgEl.height = 100;
-
-                        // Kirim GIF saat diklik
-                        imgEl.addEventListener("click", () => {
-                          const AES_KEY = "$afitri&D1N1";
-                          const receiverId = document.getElementById("receiver-id").value;
-
-                          if (!receiverId) {
-                            return alert("Pilih dulu teman yang ingin diajak chat!");
-                          }
-
-                          const rawGifMessage = `<img src="${imgUrl}" alt="gif" class="chat-bubble gif-message">`;
-                          const encryptedGifMessage = CryptoJS.AES.encrypt(rawGifMessage, AES_KEY).toString();
-
-                          socket.emit("send_message", {
-                            sender_id: senderId,
-                            receiver_id: receiverId,
-                            message: encryptedGifMessage
-                          });
-
-
-
-                          chatBody.appendChild(wrapper);
-                          chatBody.scrollTop = chatBody.scrollHeight;
-
-                          // Tutup container GIF
-                          gifContainer.style.display = "none";
-                        });
-
-                        gifResults.appendChild(imgEl);
-                      });
-                    } catch (error) {
-                      console.error("❌ Error fetch GIF:", error);
-                    }
-                  });
-              document.getElementById("like-button").addEventListener("click", () => {
-                const AES_KEY = "$afitri&D1N1";
-                const senderId = document.getElementById("sender-id")?.value;
-                const receiverId = document.getElementById("receiver-id")?.value;
+                imgEl.addEventListener("click", () => {
+                  const AES_KEY = "$afitri&D1N1";
+                  const receiverIdElem = document.getElementById("receiver-id");
+                  if (!receiverIdElem) return;
+                  const receiverId = receiverIdElem.value;
                   if (!receiverId) {
                     return alert("Pilih dulu teman yang ingin diajak chat!");
                   }
-                  const likeEmoji = "👍";
-                  const encryptedLike = CryptoJS.AES.encrypt(likeEmoji, AES_KEY).toString();
 
+                  const rawGifMessage       = `<img src="${imgUrl}" alt="gif" class="chat-bubble gif-message">`;
+                  const encryptedGifMessage = CryptoJS.AES.encrypt(rawGifMessage, AES_KEY).toString();
 
                   socket.emit("send_message", {
-                    sender_id : senderId,
-                    receiver_id : receiverId,
-                    message: encryptedLike
-                });
-              });
-               document.addEventListener("DOMContentLoaded", function () {
-                const fileInput = document.getElementById("file-upload");
-                const previewContainer = document.getElementById("image-preview");
-                const previewImage = document.getElementById("preview-img");
+                    sender_id:   senderIdGlobal,
+                    receiver_id: receiverId,
+                    message:     encryptedGifMessage
+                  });
 
-                fileInput.addEventListener("change", function () {
-                  const file = this.files[0];
-                  if (file && file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                      previewImage.src = e.target.result;
-                      previewContainer.style.display = "block";
-                    };
-                    reader.readAsDataURL(file);
-                  } else {
-                    previewImage.src = "";
-                    previewContainer.style.display = "none";
-                  }
+                  // Tampilkan langsung di chat (jika terbuka)
+                  const chatBody = document.querySelector("#chat-box .flex-grow-1");
+                  gifContainer.style.display = "none";
                 });
+
+                gifResults.appendChild(imgEl);
               });
-              function removeImage() {
-                fileInput.value = "";
-                previewImage.src = "";
-                previewImage.style.display = "none"; // Sembunyikan gambar
-                previewContainer.style.display = "none"; // Sembunyikan container
-      }
+            } catch (error) {
+              console.error("❌ Error fetch GIF:", error);
+            }
+          });
+        }
+
+        // =========================
+        // 12. Tombol Like (Emoji “👍”)
+        // =========================
+        const likeBtnElem = document.getElementById("like-button");
+        if (likeBtnElem) {
+          likeBtnElem.addEventListener("click", () => {
+            const AES_KEY     = "$afitri&D1N1";
+            const senderId    = document.getElementById("sender-id")?.value;
+            const receiverId  = document.getElementById("receiver-id")?.value;
+            if (!senderId || !receiverId) {
+              return alert("Pilih dulu teman yang ingin diajak chat!");
+            }
+            const likeEmoji     = "👍";
+            const encryptedLike = CryptoJS.AES.encrypt(likeEmoji, AES_KEY).toString();
+
+            socket.emit("send_message", {
+              sender_id:   senderId,
+              receiver_id: receiverId,
+              message:     encryptedLike
+            });
+          });
+        }
+
+        // =========================
+        // 13. Upload Foto/Video di Chat
+        // =========================
+        const btnUpload   = document.getElementById("btn-upload");
+        const uploadInput = document.getElementById("upload-input");
+        const placeholder = document.getElementById("placeholder");
+        const previewImg  = document.getElementById("preview-img");
+        const removeBtn   = document.getElementById("remove-img");
+
+        if (btnUpload && uploadInput && placeholder && previewImg && removeBtn) {
+          btnUpload.addEventListener("click", () => {
+            placeholder.style.display = "block";
+            uploadInput.click();
+          });
+
+          uploadInput.addEventListener("change", () => {
+            const file = uploadInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+              previewImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          });
+
+          removeBtn.addEventListener("click", () => {
+            uploadInput.value = "";
+            previewImg.src = "";
+            placeholder.style.display = "none";
+          });
+        }
+
+        // =========================
+        // 14. Dropdown Privasi
+        // =========================
+        document.querySelectorAll(".dropdown-item").forEach(item => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+            const pilihan = this.getAttribute("data-value");
+            const privInput = document.getElementById("privacyInput");
+            const privDrop  = document.getElementById("privacyDropdown");
+            if (privInput) privInput.value = pilihan;
+            if (privDrop) {
+              privDrop.innerText = (pilihan === "HanyaSaya") ? "HanyaSaya" : pilihan;
+            }
+          });
+        });
+
+        // =========================
+        // 15. Infinite Scroll / Load Post
+        // =========================
+        let currentPage   = {{ current_page|default(1) }};
+        const POSTS_PER_PAGE = {{ posts_per_page|default(5) }};
+        let totalPosts    = {{ total_posts|default(0) }};
+        let loading       = false;
+        let allLoaded     = false;
+
+        function isNearBottom() {
+          const scrollY  = window.scrollY || window.pageYOffset;
+          const vh       = window.innerHeight;
+          const pageH    = document.documentElement.scrollHeight;
+          return scrollY + vh >= pageH - 100;
+        }
+
+        window.addEventListener("scroll", function () {
+          if (allLoaded || loading) return;
+          if (isNearBottom()) {
+            loadMorePosts();
+          }
+        });
+
+        function loadMorePosts() {
+          loading = true;
+          currentPage += 1;
+          $("#loader").show();
+
+          $.ajax({
+            url: "{{ url_for('dashboard') }}",
+            method: "GET",
+            data: {
+              page: currentPage,
+              ajax: 1
+            },
+            success: function (response) {
+              if (!response.trim()) {
+                allLoaded = true;
+                $("#loader").hide();
+                return;
+              }
+              $("#post-container").append(response);
+              loading = false;
+              $("#loader").hide();
+
+              const loadedCount = $(".card").length;
+              if (loadedCount >= totalPosts) {
+                allLoaded = true;
+              }
+            },
+            error: function () {
+              loading = false;
+              $("#loader").hide();
+            }
+          });
+        }
+
+        // =========================
+        // 16. Tag Teman di Postingan
+        // =========================
+       const friendListEl    = document.getElementById("friendList");
+        const doneButton      = document.getElementById("doneTagging");
+        const hiddenInput     = document.getElementById("tagged_users_input");
+        const taggedDisplay   = document.getElementById("taggedDisplay");
+        const searchInput     = document.getElementById("searchFriendInput");
+        const selectedCon     = document.getElementById("selectedFriendsContainer");
+        const selectedFriends = document.getElementById("selectedFriends");
+
+        // Array untuk men‐yimpan teman yang sudah dipilih { id, name }
+        let taggedFriendsArr = [];
+
+        // 1. Ketika user klik salah satu “Saran”:
+        if (friendListEl) {
+          friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
+            item.addEventListener("click", function () {
+              const id   = this.getAttribute("data-id");
+              const name = this.getAttribute("data-name");
+
+              // Jika belum ada di taggedFriendsArr, tambahkan:
+              if (!taggedFriendsArr.some(f => f.id === id)) {
+                taggedFriendsArr.push({ id, name });
+              }
+              // Sembunyikan elemen ini dari daftar saran
+              this.style.display = "none";
+
+              // Render ulang daftar “Ditandai” di modal
+              renderTaggedFriends();
+            });
+          });
+        }
+
+        // 2. Fungsi untuk menampilkan “pill” di area Ditandai:
+        function renderTaggedFriends() {
+          // Jika ada teman ter‐tag, tampilkan container:
+          if (taggedFriendsArr.length > 0) {
+            selectedCon.style.display = "block";
+          } else {
+            selectedCon.style.display = "none";
+          }
+          // Kosongkan dulu isian HTML
+          selectedFriends.innerHTML = "";
+
+          taggedFriendsArr.forEach(friend => {
+            const pill = document.createElement("div");
+            pill.classList.add("tag-pill");
+            pill.innerHTML = `
+              <span>${friend.name}</span>
+              <span class="remove-tag">&times;</span>
+            `;
+            // Ketika ikon × diklik, hapus tag:
+            pill.querySelector(".remove-tag").addEventListener("click", function () {
+              // Buang dari array
+              taggedFriendsArr = taggedFriendsArr.filter(f => f.id !== friend.id);
+              // Cari kembali item di friendList dan tampilkan
+              friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
+                if (item.getAttribute("data-id") === friend.id) {
+                  item.style.display = "";
+                }
+              });
+              renderTaggedFriends();
+            });
+            selectedFriends.appendChild(pill);
+          });
+        }
+
+        // 3. Ketika user klik tombol “Selesai” (id="doneTagging"):
+        if (doneButton && hiddenInput && taggedDisplay) {
+          doneButton.addEventListener("click", function () {
+            // Ambil array ID dan simpan ke hiddenInput dalam bentuk JSON:
+            const ids = taggedFriendsArr.map(f => f.id);
+            hiddenInput.value = JSON.stringify(ids);
+
+            // Siapkan teks “bersama Nama1, Nama2, …”
+            if (taggedFriendsArr.length > 0) {
+              const names = taggedFriendsArr.map(f => f.name).join(", ");
+              taggedDisplay.textContent = "bersama " + names;
+              taggedDisplay.style.display = "inline"; // pastikan tampil di samping nama
+            } else {
+              taggedDisplay.textContent = "";
+              taggedDisplay.style.display = "none";
+            }
+            // Modal otomatis tertutup karena data-bs-dismiss="modal"
+          });
+        }
+
+        if (searchInput && friendListEl) {
+          searchInput.addEventListener("input", function () {
+            const filter = this.value.toLowerCase();
+            friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
+              const name = item.getAttribute("data-name").toLowerCase();
+              if (name.includes(filter) && item.style.display !== "none") {
+                item.style.display = "";
+              } else {
+                item.style.display = "none";
+              }
+            });
+          });
+        }
+      });
     </script>
   </body>
 </html>

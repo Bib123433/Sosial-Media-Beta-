@@ -1,0 +1,289 @@
+{% for post in posts %}
+<div class="col-sm-12">
+  <div class="card card-block card-stretch card-height">
+    <div class="card-body">
+      <div class="user-post-data">
+        <div class="d-flex justify-content-between">
+          <div class="me-3">
+            <img
+              class="rounded-circle img-fluid"
+              src="static/assets/images/user/01.jpg"
+              alt=""
+            />
+          </div>
+          <div class="w-100">
+            <div class="d-flex justify-content-between">
+              <div class="">
+                <h5 class="mb-0 d-inline-block">{{ post.full_name }}</h5>
+                <p class="mb-0 text-primary">
+                  {{ post.timestamp|naturaltime }} {% if post.privasi ==
+                  "Publik" %}
+                  <!-- Contoh menggunakan Font Awesome: ikon "user-friends"  -->
+                  <i
+                    class="bi bi-globe text-secondary ms-1"
+                    title="Publik"
+                    style="font-size: 0.9em"
+                  ></i>
+                  {% elif post.privasi == "Teman"%}
+                  <i
+                    class="bi bi-people text-secondary ms-1"
+                    title="Teman Anda"
+                    style="font-size: 0.9em"
+                  ></i>
+                  {% elif post.privasi == "Hanya Saya"%}
+                  <i
+                    class="bi bi-lock text-secondary ms-1"
+                    title="Hanya Saya"
+                    style="font-size: 0.9em"
+                  ></i>
+                  {% endif %}
+                </p>
+              </div>
+              <div class="card-post-toolbar">
+                <div class="dropdown">
+                  <span
+                    class="dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    role="button"
+                  >
+                    <i class="ri-more-fill"></i>
+                  </span>
+                  <div class="dropdown-menu m-0 p-0">
+                    <a class="dropdown-item p-3" href="#">
+                      <div class="d-flex align-items-top">
+                        <div class="h4">
+                          <i class="ri-save-line"></i>
+                        </div>
+                        <div class="data ms-2">
+                          <h6>Save Post</h6>
+                          <p class="mb-0">Add this to your saved items</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a class="dropdown-item p-3" href="#">
+                      <div class="d-flex align-items-top">
+                        <i class="ri-close-circle-line h4"></i>
+                        <div class="data ms-2">
+                          <h6>Hide Post</h6>
+                          <p class="mb-0">See fewer posts like this.</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a class="dropdown-item p-3" href="#">
+                      <div class="d-flex align-items-top">
+                        <i class="ri-user-unfollow-line h4"></i>
+                        <div class="data ms-2">
+                          <h6>Unfollow User</h6>
+                          <p class="mb-0">
+                            Stop seeing posts but stay friends.
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                    <a class="dropdown-item p-3" href="#">
+                      <div class="d-flex align-items-top">
+                        <i class="ri-notification-line h4"></i>
+                        <div class="data ms-2">
+                          <h6>Notifications</h6>
+                          <p class="mb-0">
+                            Turn on notifications for this post
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <p>{{ post.text }}</p>
+      </div>
+      <div class="user-post">
+        {% if post.image is string %}
+        <img
+          src="{{ post.image.replace('\\', '/') }}"
+          alt="post-image"
+          class="img-fluid rounded w-100"
+        />
+        {% elif post.image|length == 1 %}
+        <img
+          src="{{ post.image[0].replace('\\', '/') }}"
+          alt="post-image"
+          class="img-fluid rounded w-100"
+        />
+        {% else %}
+        <div class="d-grid grid-rows-2 grid-flow-col gap-3">
+          {% for image in post.image %}
+          <div class="row-span-1">
+            <img
+              src="{{ image.replace('\\', '/') }}"
+              alt="post-image"
+              class="img-fluid rounded w-100"
+            />
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="comment-area mt-3">
+        <div
+          class="d-flex justify-content-between align-items-center flex-wrap"
+        >
+          <div class="like-block position-relative d-flex align-items-center">
+            <div class="d-flex align-items-center">
+              <div class="like-data">
+                <div class="dropdown">
+                  <span class="dropdown-toggle" data-bs-toggle="dropdown">
+                    <img
+                      id="reaction-icon-{{ post._id }}"
+                      src="{{ url_for('static', filename='assets/images/icon/' + '%02d' % (['like','love','happy','haha','think','sad','lovely'].index(post.user_reaction or 'like') + 1) + '.png') }}"
+                      class="img-fluid"
+                      alt=""
+                    />
+                  </span>
+                  <div class="dropdown-menu py-2">
+                    {% for reaction in
+                    ['like','love','happy','haha','think','sad','lovely'] %}
+                    <a
+                      class="me-2"
+                      href="#"
+                      onclick="reactToPost('{{ post._id }}', '{{ reaction }}')"
+                    >
+                      <img
+                        src="{{ url_for('static', filename='assets/images/icon/' + '%02d' % loop.index + '.png') }}"
+                        class="img-fluid"
+                        title="{{ reaction|capitalize }}"
+                      />
+                    </a>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              <div class="total-like-block ms-2 me-3">
+                <div class="dropdown">
+                  <span
+                    class="dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    role="button"
+                  >
+                    {{ post.like_count }} Likes
+                  </span>
+                  <div class="dropdown-menu">
+                    {% if post.liked_users %} {% for name in post.liked_users %}
+                    <a class="dropdown-item" href="#">{{ name }}</a>
+                    {% endfor %} {% else %}
+                    <a class="dropdown-item disabled text-muted" href="#"
+                      >Belum ada yang menyukai</a
+                    >
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="total-comment-block">
+              <div class="dropdown">
+                <span
+                  class="dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                  role="button"
+                  >{{ post.komentar_count }} Komentar</span
+                >
+                <div class="dropdown-menu">
+                  {% if post.komentar_list %} {% for komentar in
+                  post.komentar_list %}
+                  <a class="dropdown-item" href="#">
+                    {{ komentar.full_name}}
+                  </a>
+                  {% endfor %} {% else %}
+                  <a class="dropdown-item disabled text-muted" href="#">
+                    Belum ada yang komentar
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="share-block d-flex align-items-center feather-icon mt-2 mt-md-0"
+          >
+            <a
+              href="javascript:void(0);"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#share-btn"
+              ><i class="ri-share-line"></i
+              ><span class="ms-1">99 Share</span></a
+            >
+          </div>
+        </div>
+        <hr />
+        <!-- Comments -->
+        <ul class="post-comments list-inline p-0 m-0">
+          {% for komentar in post.komentar_list %}
+          <li class="mb-2">
+            <div class="d-flex">
+              <div class="user-img">
+                <img
+                  src="{{ komentar.avatar or url_for('static', filename='static/assets/images/user/01.jpg') }}"
+                  alt="userimg"
+                  class="avatar-35 rounded-circle img-fluid"
+                />
+              </div>
+              <div class="comment-data-block ms-3">
+                <h6>{{ komentar.full_name }}</h6>
+                <p class="mb-0">{{ komentar.komentar }}</p>
+                <div
+                  class="d-flex flex-wrap align-items-center comment-activity"
+                >
+                  <a href="#">like</a>
+                  <a href="#">reply</a>
+                  <a href="#">translate</a>
+                  <span>{{ komentar.timestamp|naturaltime }}</span>
+                </div>
+              </div>
+            </div>
+          </li>
+          {% else %}
+          <li>
+            <div class="text-muted">Belum ada komentar.</div>
+          </li>
+          {% endfor %}
+        </ul>
+        <!-- Input -->
+        <form
+          class="mt-2"
+          action="{{ url_for('kirim_komentar', post_id=post._id) }}"
+          method="POST"
+        >
+          <div class="comment-box">
+            <input
+              type="text"
+              id="commentInput"
+              name="komentar"
+              placeholder="Tulis komentar..."
+            />
+            <div class="comment-actions">
+              <a href="#" onclick="openAttachment('link')"
+                ><i class="ri-link"></i
+              ></a>
+              <a href="#" onclick="openEmojiPicker()"
+                ><i class="ri-user-smile-line"></i
+              ></a>
+              <a href="#" onclick="openEmojiPicker()"
+                ><i class="ri-camera-line"></i
+              ></a>
+              <button type="submit" class="comment-send-btn">
+                <i class="ri-send-plane-fill"></i>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
