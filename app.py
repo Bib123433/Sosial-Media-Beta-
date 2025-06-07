@@ -15,6 +15,9 @@ from system.socket import online_users
 from system.socket import init_socket
 import re
 import json
+from system.socket import kirim_notifikasi
+from system import cloudinary   
+import cloudinary.uploader
 
 
 
@@ -79,6 +82,7 @@ def send_request_friend(sender_id, receiver_id):
         
         return True
     return False
+
 
 def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
@@ -233,11 +237,13 @@ def post():
         image = request.files.get("image")
         privasi = request.form.get("privasi", "Publik")
         
-        image_path = "None"
+        image_url = None
         if image and image.filename != "":
-            filename = secure_filename(image.filename)
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            image.save(image_path)
+            upload_result = cloudinary.uploader.upload(image)
+            image_url = upload_result.get("secure_url")
+            
+            print('gambar berhasil di upload', image_url)
+
             
         tag_json = request.form.get("tag_users", "[]")
         try:
@@ -251,7 +257,7 @@ def post():
             "full_name": session["full_name"],
             "email": session["email"],
             "text": text,
-            "image": image_path,
+            "image": image_url,
             "privasi": privasi,
             "tag_users": [ObjectId(tid) for tid in tag_list],  # list of ObjectId
             "timestamp": datetime.utcnow(),
@@ -270,6 +276,13 @@ def post():
             if not ObjectId.is_valid(tid):
                 continue
             to_user_id = ObjectId(tid)
+            
+            user_pengirim = mongo.db.user.find_one({"_id": ObjectId(session["user_id"])})
+            if user_pengirim:
+                foto_pengirim = user_pengirim.get("profile_picture", "/static/default.png")
+            else:
+                foto_pengirim = "/static/default.png"
+
             notification = {
                 "type": "tag",
                 "user_id": ObjectId(session["user_id"]),   
@@ -279,7 +292,61 @@ def post():
                 "is_read": False
             }
             mongo.db.notifications.insert_one(notification)
-        return redirect(url_for("dashboard"))
+            
+            notif_data = {
+                "type": "tag",
+                "full_name": session["full_name"],
+                "profile_picture": foto_pengirim,
+                "post_id": str(post_id),
+                "timestamp": notification["timestamp"].isoformat()
+            }
+            kirim_notifikasi(socketio, str(to_user_id), notif_data)
+
+        
+    return redirect(url_for("dashboard"))
+
+@app.route("/notifications", methods=["GET"])
+@login_required
+def get_notifications():
+    user_id = ObjectId(session["user_id"])
+    try:
+        docs = mongo.db.notifications.find(
+            {"to_user_id": user_id}
+        ).sort("timestamp", -1).limit(100)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    list_notif = []
+    for d in docs:
+        user_pengirim = mongo.db.user.find_one({"_id": d.get("user_id")})
+        if user_pengirim:
+            nama_pengirim = user_pengirim.get("full_name", "Seseorang")
+            foto_pengirim = user_pengirim.get("profile_picture", "/static/default.png")
+        else:
+            nama_pengirim = "Seseorang"
+            foto_pengirim = "/static/default.png"
+
+        waktu = ""
+        if d.get("timestamp"):
+            try:
+                waktu = d["timestamp"].strftime("%d %b %Y %H:%M")
+            except Exception:
+                waktu = str(d["timestamp"])
+
+        list_notif.append({
+            "_id": str(d.get("_id")),
+            "full_name": nama_pengirim,
+            "profile_picture": foto_pengirim,
+            "post_owner": d.get("post_owner", ""),
+            "post_id": str(d.get("post_id", "")),
+            "time": waktu,
+            "is_read": d.get("is_read", False),
+            "type": d.get("type", "tag")
+        })
+
+    return jsonify(list_notif), 200
+
+
     
 @app.route("/post-profile", methods=["GET", "POST"])
 @login_required
@@ -986,6 +1053,33 @@ def send_message():
     except Exception as e:
         print("Error saat simpan pesan:", e)
         return "Internal Server Error", 500
+    
+@app.route("/messages/<other_user_id>", methods=["GET"])
+@login_required
+def get_message(other_user_id):
+    current_id = session.get("user_id")
+    if not current_id or not ObjectId.is_valid(current_id) or not ObjectId.is_valid(other_user_id):
+        return jsonify([]),400
+    
+    user_obj = ObjectId(current_id)
+    other_obj = ObjectId(other_user_id)
+    
+    cursor = mongo.db.messages.find({
+        "$or": [
+            { "sender_id":   user_obj,  "receiver_id": other_obj },
+            { "sender_id":   other_obj, "receiver_id": user_obj }
+        ]
+    }).sort("timestamp", 1)
+    
+    result = []
+    for m in cursor:
+        result.append({
+            "sender_id":   str(m["sender_id"]),
+            "receiver_id": str(m["receiver_id"]),
+            "message":     m["content"],
+            "timestamp":   m["timestamp"].isoformat()
+        })
+    return jsonify(result), 200
 
 
 @app.route("/dashboard", methods=["GET"])
