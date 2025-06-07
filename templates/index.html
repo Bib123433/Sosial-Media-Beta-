@@ -304,9 +304,27 @@
       #friendList .list-group-item:hover {
         background-color: #f8f9fa;
       }
+      /* Pastikan #notification-drop sudah punya position:relative */
+      #notification-drop {
+        position: relative;
+      }
 
-      /* Gaya ketika item di‐klik / terpilih, kita set display:none di JS */
-      /* Jadi tidak perlu style khusus di sini */
+      /* Atur badge di pojok kanan-atas parent #notification-drop */
+      #notification-drop .badge {
+        display: none; /* awalnya sembunyikan (JS yang nantinya menampilkan) */
+        position: absolute; /* absolute terhadap parent yang relatif */
+        top: 0; /* pojok atas */
+        right: 0; /* pojok kanan */
+        transform: translate(50%, -50%); /* geser sedikit agar “menggantung” */
+        width: 18px; /* ukuran kotak badge */
+        height: 18px; /* ukuran kotak badge */
+        line-height: 18px; /* agar teks vertikal ter-center */
+        font-size: 12px; /* ukuran teks angka */
+        text-align: center; /* rata tengah horizontal */
+        padding: 0; /* padding nol */
+        border-radius: 50%; /* bentuk lingkaran */
+        z-index: 10; /* agar selalu di atas ikon */
+      }
     </style>
   </head>
   <body class="  ">
@@ -898,7 +916,12 @@
                             <div class="d-flex justify-content-between">
                               <div class="">
                                 <h5 class="mb-0 d-inline-block">
-                                  {{ post.full_name }}
+                                  {{ post.full_name }} {% if post.tag_users %}
+                                  <span class="text-secondary"
+                                    >Bersama {{ post.tag_users|join(', ')
+                                    }}</span
+                                  >
+                                  {% endif %}
                                 </h5>
                                 <p class="mb-0 text-primary">
                                   {{ post.timestamp|naturaltime }} {% if
@@ -995,7 +1018,7 @@
                       <div class="user-post">
                         {% if post.image is string %}
                         <img
-                          src="{{ post.image.replace('\\', '/') }}"
+                          src="{{ post.image }}"
                           alt="post-image"
                           class="img-fluid rounded w-100"
                         />
@@ -1647,22 +1670,130 @@
     <!-- Input hidden di form utama -->
 
     <script>
+      // ====================================
+      // 0. Siapkan var socket secara global
+      // ====================================
+      let socket;
+
+      // ====================================
+      // 1. Toggle Send/Like Button (global)
+      // ====================================
+      function toggleSendButton() {
+        const input   = document.getElementById("chat-input");
+        const likeBtn = document.getElementById("like-button");
+        const sendBtn = document.getElementById("send-button");
+        if (!input || !likeBtn || !sendBtn) return;
+
+        if (input.value.trim()) {
+          likeBtn.classList.add("d-none");
+          sendBtn.classList.remove("d-none");
+        } else {
+          likeBtn.classList.remove("d-none");
+          sendBtn.classList.add("d-none");
+        }
+      }
+
+      // =========================
+        // 6. Kirim Pesan
+        // =========================
+        function sendMessage() {
+          const AES_KEY      = "$afitri&D1N1";
+          const senderIdElem = document.getElementById("sender-id");
+          const receiverElem = document.getElementById("receiver-id");
+          const inputElem    = document.getElementById("chat-input");
+
+          if (!senderIdElem || !receiverElem || !inputElem) return;
+
+          const senderId   = senderIdElem.value;
+          const receiverId = receiverElem.value;
+          const rawMessage = inputElem.value.trim();
+          if (!rawMessage) return;
+
+          const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
+          socket.emit("send_message", {
+            sender_id:   senderId,
+            receiver_id: receiverId,
+            message:     encryptedMessage
+          });
+
+          // Tampilkan langsung di sisi pengirim
+          const chatBody = document.querySelector("#chat-box .flex-grow-1");
+          if (chatBody) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("text-end", "mb-2");
+
+            chatBody.appendChild(messageElement);
+            chatBody.scrollTop = chatBody.scrollHeight;
+          }
+
+          inputElem.value = "";
+          toggleSendButton();
+        }
+
+        const backBtn = document.getElementById("backToPost");
+        if (backBtn) {
+          backBtn.addEventListener("click", function () {
+            const tagFriendModal  = bootstrap.Modal.getInstance(document.getElementById("tagFriendModal"));
+            const createPostModal = new bootstrap.Modal(document.getElementById("post-modal"));
+            if (tagFriendModal) tagFriendModal.hide();
+            if (createPostModal) createPostModal.show();
+          });
+        }
+
+        // =========================
+        // 7. Reaction ke Post
+        // =========================
+        window.reactToPost = function (postId, reaction) {
+          fetch(`/react/${postId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reaction })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.message === "Reaction updated successfully!") {
+              const iconMap = {
+                like:   "01.png",
+                love:   "02.png",
+                happy:  "03.png",
+                haha:   "04.png",
+                think:  "05.png",
+                sad:    "06.png",
+                lovely: "07.png"
+              };
+              const iconElem = document.querySelector(`#reaction-icon-${postId}`);
+              if (iconElem) {
+                iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
+              }
+            }
+          })
+          .catch(console.error);
+        };
+
+      const sendBtnElem = document.getElementById("send-button");
+      if (sendBtnElem) {
+        sendBtnElem.addEventListener("click", sendMessage);
+      }
+
+
+      // ====================================
+      // 2. Menunggu DOM siap
+      // ====================================
       document.addEventListener("DOMContentLoaded", function () {
-        // =========================
-        // 1. Data Teman & Render Status Online/Offline
-        // =========================
+        // ------------------------------------
+        // 2.a. Data Teman & Render Status Online
+        // ------------------------------------
         const friendList = {{ friend_list_data | tojson | default('[]') }};
 
         function renderFriends(onlineIds) {
           const container = document.querySelector(".media-height");
           if (!container) return;
-
-          container.innerHTML = ""; // Kosongkan dulu
+          container.innerHTML = "";
           friendList.forEach(f => {
             const isOnline   = onlineIds.includes(f._id);
             const dotClass   = isOnline ? "status-online" : "";
             const statusText = isOnline ? "Online" : "Offline";
-            const profilePic = f.profile_picture; // Sudah berisi "/static/…"
+            const profilePic = f.profile_picture;
 
             const html = `
               <div class="d-flex align-items-center mb-4"
@@ -1682,13 +1813,13 @@
           });
         }
 
-        // Render awal (semua offline)
+        // Render awal (semua dianggap offline)
         renderFriends([]);
 
-        // =========================
-        // 2. Setup Socket.IO (untuk chat & status teman)
-        // =========================
-        const socket = io({
+        // ------------------------------------
+        // 2.b. Inisialisasi Socket.IO
+        // ------------------------------------
+        socket = io({
           auth: {
             user_id:   "{{ session.get('user_id') }}",
             full_name: "{{ session.get('full_name') }}"
@@ -1703,13 +1834,162 @@
           const onlineIds = users.map(u => u.user_id);
           renderFriends(onlineIds);
         });
-
         socket.on("user_connected",    () => socket.emit("request_online_users"));
         socket.on("user_disconnected", () => socket.emit("request_online_users"));
 
-        // =========================
-        // 3. Terima Pesan Baru
-        // =========================
+        // ------------------------------------
+        // 2.c. Fetch Notifikasi → Render
+        // ------------------------------------
+        fetch("/notifications")
+          .then(response => {
+            if (!response.ok) {
+              return response.text().then(text => {
+                console.error("Response bukan JSON:", text);
+                throw new Error("Gagal memuat notifikasi");
+              });
+            }
+            return response.json();
+          })
+          .then(notifArray => {
+            const badge      = document.getElementById("notif-badge");
+            const countLabel = document.getElementById("notif-count");
+            const notifList  = document.getElementById("notif-list");
+            if (!badge || !countLabel || !notifList) return;
+
+            let unreadCount = notifArray.filter(n => n.is_read === false).length;
+            if (unreadCount > 0) {
+              badge.textContent   = unreadCount;
+              badge.style.display = "inline-block";
+            }
+            countLabel.textContent = notifArray.length;
+
+            notifArray.forEach(n => {
+              const a = document.createElement("a");
+              a.href = `/post/${n.post_id}`;
+              a.className = "iq-sub-card d-block";
+
+              const unreadDot = (!n.is_read)
+                ? `<span class="bg-primary rounded-circle"
+                          style="width:8px; height:8px; display:inline-block; margin-left:5px;"></span>`
+                : "";
+
+              a.innerHTML = `
+                <div class="d-flex align-items-center">
+                  <img src="${n.profile_picture}" alt="avatar" class="avatar-40 rounded-circle" />
+                  <div class="ms-3 w-100">
+                    <h6 class="mb-0">${n.full_name} ${unreadDot}</h6>
+                    <p class="mb-0 text-truncate">
+                      ${n.type === "tag"
+                        ? "Menandai Anda Dalam Postingan"
+                        : "Menyukai postingan Anda pada"}
+                    </p>
+                    <small class="float-right font-size-12 text-muted">${n.time}</small>
+                  </div>
+                </div>`;
+              notifList.appendChild(a);
+            });
+          })
+          .catch(err => console.error("Fetch notifikasi gagal:", err));
+
+        socket.on("notify", data => {
+          // Saat notifikasi baru datang via Socket.IO
+          const badge      = document.getElementById("notif-badge");
+          const countLabel = document.getElementById("notif-count");
+          const notifList  = document.getElementById("notif-list");
+          if (!badge || !countLabel || !notifList) return;
+
+          let currentBadge = parseInt(badge.textContent || "0", 10) + 1;
+          let currentCount = parseInt(countLabel.textContent || "0", 10) + 1;
+          badge.textContent   = currentBadge;
+          badge.style.display = "inline-block";
+          countLabel.textContent = currentCount;
+
+          const a = document.createElement("a");
+          a.href = `/post/${data.post_id}`;
+          a.className = "iq-sub-card d-block";
+          a.innerHTML = `
+            <div class="d-flex align-items-center">
+              <img src="${data.profile_picture || '/static/default.png'}"
+                   alt="avatar"
+                   class="avatar-40 rounded-circle" />
+              <div class="ms-3 w-100">
+                <h6 class="mb-0">${data.full_name}
+                  <span class="bg-primary rounded-circle"
+                        style="width:8px;height:8px;display:inline-block;margin-left:5px;"></span>
+                </h6>
+                <p class="mb-0 text-truncate">
+                  ${data.type === "tag"
+                    ? "Menandai Anda Dalam Postingan"
+                    : "Menyukai postingan Anda pada"}
+                </p>
+                <small class="float-right font-size-12 text-muted">${data.time || "Baru saja"}</small>
+              </div>
+            </div>`;
+          notifList.prepend(a);
+        });
+
+        // ------------------------------------
+        // 2.d. Fungsi: Load Chat History dari server
+        // ------------------------------------
+        function loadChatHistory(otherUserId) {
+          const chatBody = document.getElementById("chat-messages");
+          if (!chatBody) return;
+          chatBody.innerHTML = "";
+
+          fetch(`/messages/${otherUserId}`)
+            .then(res => {
+              if (!res.ok) throw new Error("Gagal memuat chat history");
+              return res.json();
+            })
+            .then(messages => {
+              const myId = document.getElementById("sender-id").value;
+              messages.forEach(msg => {
+                const decrypted = msg.message;
+                const isOwn = (msg.sender_id === myId);
+
+                const wrapper = document.createElement("div");
+                wrapper.classList.add("d-flex", "mb-2",
+                  isOwn ? "justify-content-end" : "justify-content-start"
+                );
+
+                if (isOwn) {
+                  // Pesan dari saya → bubble warna primer
+                  wrapper.innerHTML = `
+                    <div class="badge bg-primary text-wrap"
+                         style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
+                      ${decrypted}
+                    </div>
+                    <small class="text-muted ms-2" style="font-size:10px;">
+                      ${new Date(msg.timestamp).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                    </small>
+                  `;
+                } else {
+                  // Pesan dari lawan chat → tampilkan avatar + bubble sekunder
+                  const avatarSrc = document.getElementById("chat-profile-picture1").src;
+                  wrapper.innerHTML = `
+                    <img src="${avatarSrc}" class="rounded-circle me-2" width="32" height="32" alt="Avatar" />
+                    <div>
+                      <span class="badge bg-secondary text-wrap"
+                            style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
+                        ${decrypted}
+                      </span>
+                      <small class="text-muted d-block" style="font-size:10px;">
+                        ${new Date(msg.timestamp).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                      </small>
+                    </div>
+                  `;
+                }
+
+                chatBody.appendChild(wrapper);
+              });
+              chatBody.scrollTop = chatBody.scrollHeight;
+            })
+            .catch(err => console.error(err));
+        }
+
+        // ------------------------------------
+        // 2.e. Listener: Menerima Pesan Baru via Socket.IO
+        // ------------------------------------
         socket.on("new_message", data => {
           const AES_KEY = "$afitri&D1N1";
           let decryptedMessage;
@@ -1720,6 +2000,10 @@
             console.error("❌ Gagal dekripsi pesan:", err);
             decryptedMessage = "❗Pesan terenkripsi (gagal dekripsi)";
           }
+
+          function emojiOnly(text) {
+          return /^\p{Extended_Pictographic}+$/u.test(text.trim());
+        }
 
           const myId            = document.getElementById("sender-id") ? document.getElementById("sender-id").value : null;
           const currentReceiver = document.getElementById("receiver-id") ? document.getElementById("receiver-id").value : null;
@@ -1792,34 +2076,39 @@
           chatBody.scrollTop = chatBody.scrollHeight;
         });
 
-        // =========================
-        // 4. Fungsi: Buka & Tutup Chat
-        // =========================
+        // ------------------------------------
+        // 2.f. Fungsi: openChat → Tampilkan Popup & Load History
+        // ------------------------------------
         window.openChat = function (userId, fullName = "", profilePic = "") {
           const chatBox = document.getElementById("chat-box");
           if (!chatBox) return;
-
           chatBox.style.display = "flex";
           chatBox.classList.remove("chat-pop");
-          void chatBox.offsetWidth; // Trigger reflow
+          void chatBox.offsetWidth; // trigger reflow
           chatBox.classList.add("chat-pop");
 
-          const receiverInput = document.getElementById("receiver-id");
+          // Set receiver-id
+         const receiverInput = document.getElementById("receiver-id");
           if (receiverInput) receiverInput.value = userId;
 
-          ["chat-profile-name", "chat-profile-name1"].forEach(id => {
-            const el = document.getElementById(id);
-            if (el && fullName) el.textContent = fullName;
+            ["chat-profile-name", "chat-profile-name1"].forEach(id => {
+              const el = document.getElementById(id);
+              if (el && fullName) el.textContent = fullName;
+            });
+            ["chat-profile-picture", "chat-profile-picture1"].forEach(id => {
+              const img = document.getElementById(id);
+              if (img && profilePic) {
+                img.src = profilePic;
+                img.onerror = () => { img.src = "/static/default.png"; };
+              }
           });
-          ["chat-profile-picture", "chat-profile-picture1"].forEach(id => {
-            const img = document.getElementById(id);
-            if (img && profilePic) {
-              img.src = profilePic;
-              img.onerror = () => { img.src = "/static/default.png"; };
-            }
-          });
+
+
         };
 
+        // ------------------------------------
+        // 2.g. Fungsi: closeChat → Sembunyikan Popup
+        // ------------------------------------
         window.closeChat = function () {
           const chatBox = document.getElementById("chat-box");
           if (!chatBox) return;
@@ -1827,123 +2116,11 @@
           chatBox.classList.remove("chat-pop");
         };
 
-        // =========================
-        // 5. Toggle Send/Like Button
-        // =========================
-        function toggleSendButton() {
-          const input   = document.getElementById("chat-input");
-          const likeBtn = document.getElementById("like-button");
-          const sendBtn = document.getElementById("send-button");
-          if (!input || !likeBtn || !sendBtn) return;
 
-          if (input.value.trim()) {
-            likeBtn.classList.add("d-none");
-            sendBtn.classList.remove("d-none");
-          } else {
-            likeBtn.classList.remove("d-none");
-            sendBtn.classList.add("d-none");
-          }
-        }
 
-        // =========================
-        // 6. Kirim Pesan
-        // =========================
-        function sendMessage() {
-          const AES_KEY      = "$afitri&D1N1";
-          const senderIdElem = document.getElementById("sender-id");
-          const receiverElem = document.getElementById("receiver-id");
-          const inputElem    = document.getElementById("chat-input");
-
-          if (!senderIdElem || !receiverElem || !inputElem) return;
-
-          const senderId   = senderIdElem.value;
-          const receiverId = receiverElem.value;
-          const rawMessage = inputElem.value.trim();
-          if (!rawMessage) return;
-
-          const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
-          socket.emit("send_message", {
-            sender_id:   senderId,
-            receiver_id: receiverId,
-            message:     encryptedMessage
-          });
-
-          // Tampilkan langsung di sisi pengirim
-          const chatBody = document.querySelector("#chat-box .flex-grow-1");
-          if (chatBody) {
-            const messageElement = document.createElement("div");
-            messageElement.classList.add("text-end", "mb-2");
-            messageElement.innerHTML = `
-              <span class="badge bg-primary text-wrap"
-                    style="padding: 10px 20px; border-radius: 20px; max-width: 70%; font-size: 14px;">
-                ${rawMessage}
-              </span>`;
-            chatBody.appendChild(messageElement);
-            chatBody.scrollTop = chatBody.scrollHeight;
-          }
-
-          inputElem.value = "";
-          toggleSendButton();
-        }
-        const sendBtnElem = document.getElementById("send-button");
-        if (sendBtnElem) {
-          sendBtnElem.addEventListener("click", sendMessage);
-        }
-
-        // =========================
-        // 7. Reaction ke Post
-        // =========================
-        window.reactToPost = function (postId, reaction) {
-          fetch(`/react/${postId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reaction })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.message === "Reaction updated successfully!") {
-              const iconMap = {
-                like:   "01.png",
-                love:   "02.png",
-                happy:  "03.png",
-                haha:   "04.png",
-                think:  "05.png",
-                sad:    "06.png",
-                lovely: "07.png"
-              };
-              const iconElem = document.querySelector(`#reaction-icon-${postId}`);
-              if (iconElem) {
-                iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
-              }
-            }
-          })
-          .catch(console.error);
-        };
-
-        // =========================
-        // 8. Tombol “Kembali” di Modal Tag Teman
-        // =========================
-        const backBtn = document.getElementById("backToPost");
-        if (backBtn) {
-          backBtn.addEventListener("click", function () {
-            const tagFriendModal  = bootstrap.Modal.getInstance(document.getElementById("tagFriendModal"));
-            const createPostModal = new bootstrap.Modal(document.getElementById("post-modal"));
-            if (tagFriendModal) tagFriendModal.hide();
-            if (createPostModal) createPostModal.show();
-          });
-        }
-
-        // =========================
-        // 9. Hide Loader Saat Load Selesai
-        // =========================
-        window.addEventListener("load", () => {
-          const loadingElem = document.getElementById("loading");
-          if (loadingElem) loadingElem.style.display = "none";
-        });
-
-        // =========================
-        // 10. Emoji Picker Setup
-        // =========================
+        // ------------------------------------
+        // 2.h. Emoji Picker Setup
+        // ------------------------------------
         const emojiBtn = document.querySelector('button[title="Emoji"]');
         const picker   = document.getElementById("emoji-picker");
         const chatInputElem = document.getElementById("chat-input");
@@ -1966,18 +2143,14 @@
           });
         }
 
-        function emojiOnly(text) {
-          return /^\p{Extended_Pictographic}+$/u.test(text.trim());
-        }
-
-        // =========================
-        // 11. GIF SEARCH dengan GIPHY
-        // =========================
+        // ------------------------------------
+        // 2.i. GIF Search dengan GIPHY
+        // ------------------------------------
         const gifBtn         = document.getElementById("gif-toggle-btn");
         const gifContainer   = document.getElementById("gif-container");
         const gifSearchInput = document.getElementById("gif-search");
         const gifResults     = document.getElementById("gif-results");
-        const senderIdGlobal = "{{ session.get('user_id') }}";
+        const senderIdGlobal = document.getElementById("sender-id")?.value;
 
         if (gifBtn && gifContainer) {
           gifBtn.addEventListener("click", () => {
@@ -2027,8 +2200,7 @@
                     message:     encryptedGifMessage
                   });
 
-                  // Tampilkan langsung di chat (jika terbuka)
-                  const chatBody = document.querySelector("#chat-box .flex-grow-1");
+                  // Tutup GIF container
                   gifContainer.style.display = "none";
                 });
 
@@ -2040,9 +2212,9 @@
           });
         }
 
-        // =========================
-        // 12. Tombol Like (Emoji “👍”)
-        // =========================
+        // ------------------------------------
+        // 2.j. Tombol Like (Emoji “👍”)
+        // ------------------------------------
         const likeBtnElem = document.getElementById("like-button");
         if (likeBtnElem) {
           likeBtnElem.addEventListener("click", () => {
@@ -2063,55 +2235,72 @@
           });
         }
 
-        // =========================
-        // 13. Upload Foto/Video di Chat
-        // =========================
-        const btnUpload   = document.getElementById("btn-upload");
-        const uploadInput = document.getElementById("upload-input");
-        const placeholder = document.getElementById("placeholder");
-        const previewImg  = document.getElementById("preview-img");
-        const removeBtn   = document.getElementById("remove-img");
+        // ------------------------------------
+        // 2.k. Preview Upload Gambar di Chat
+        // ------------------------------------
+        const fileInput = document.getElementById("photo-upload");
+        const previewContainer = document.getElementById("image-preview-container");
+        const previewImage = document.getElementById("image-preview");
 
-        if (btnUpload && uploadInput && placeholder && previewImg && removeBtn) {
-          btnUpload.addEventListener("click", () => {
-            placeholder.style.display = "block";
-            uploadInput.click();
-          });
-
-          uploadInput.addEventListener("change", () => {
-            const file = uploadInput.files[0];
-            if (!file) return;
+        fileInput.addEventListener("change", function () {
+          const file = this.files[0];
+          if (file) {
             const reader = new FileReader();
-            reader.onload = e => {
-              previewImg.src = e.target.result;
-            };
+            reader.addEventListener("load", function () {
+              previewImage.src = reader.result;
+              previewImage.style.display = "block";
+              previewContainer.style.display = "flex";
+            });
             reader.readAsDataURL(file);
-          });
-
-          removeBtn.addEventListener("click", () => {
-            uploadInput.value = "";
-            previewImg.src = "";
-            placeholder.style.display = "none";
-          });
-        }
-
-        // =========================
-        // 14. Dropdown Privasi
-        // =========================
-        document.querySelectorAll(".dropdown-item").forEach(item => {
-          item.addEventListener("click", function (e) {
-            e.preventDefault();
-            const pilihan = this.getAttribute("data-value");
-            const privInput = document.getElementById("privacyInput");
-            const privDrop  = document.getElementById("privacyDropdown");
-            if (privInput) privInput.value = pilihan;
-            if (privDrop) {
-              privDrop.innerText = (pilihan === "HanyaSaya") ? "HanyaSaya" : pilihan;
-            }
-          });
+          } else {
+            previewContainer.style.display = "none";
+          }
         });
 
-        // =========================
+        window.removeImage = function () {
+          fileInput.value = "";
+          previewImage.src = "";
+          previewImage.style.display = "none";
+          previewContainer.style.display = "none";
+        };
+
+        // ------------------------------------
+        // 2.l. Penutup DOMContentLoaded
+        // ------------------------------------
+      }); // <-- End of DOMContentLoaded listener
+
+
+
+      // ====================================
+      // 4. Reaction ke Post (outside DOMContentLoaded)
+      // ====================================
+      window.reactToPost = function (postId, reaction) {
+        fetch(`/react/${postId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reaction })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.message === "Reaction updated successfully!") {
+            const iconMap = {
+              like:   "01.png",
+              love:   "02.png",
+              happy:  "03.png",
+              haha:   "04.png",
+              think:  "05.png",
+              sad:    "06.png",
+              lovely: "07.png"
+            };
+            const iconElem = document.querySelector(`#reaction-icon-${postId}`);
+            if (iconElem) {
+              iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
+            }
+          }
+        })
+        .catch(console.error);
+      };
+      // =========================
         // 15. Infinite Scroll / Load Post
         // =========================
         let currentPage   = {{ current_page|default(1) }};
@@ -2268,7 +2457,32 @@
               }
             });
           });
-        }
+          }
+          document.getElementById('btn-upload').addEventListener('click', function () {
+          document.getElementById('upload-input').click();
+        });
+
+        document.getElementById('upload-input').addEventListener('change', function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              const preview = document.getElementById('preview-img');
+              preview.src = event.target.result;
+
+              document.getElementById('placeholder').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+        document.getElementById('remove-img').addEventListener('click', function () {
+        const input = document.getElementById('upload-input');
+        const preview = document.getElementById('preview-img');
+
+        // Reset input dan preview
+        input.value = '';
+        preview.src = '';
+        document.getElementById('placeholder').style.display = 'none';
       });
     </script>
   </body>
