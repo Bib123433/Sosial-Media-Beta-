@@ -103,3 +103,6 @@ def init_socket(socketio, mongo):
             online_users.pop(uid, None)
             leave_room(uid)
             emit("user_disconnected", {"user_id": uid}, broadcast=True)
+            
+def kirim_notifikasi(socketio, to_user_id, notif_data):
+    socketio.emit("notify", notif_data, room=to_user_id)
