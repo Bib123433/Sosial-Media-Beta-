@@ -18,6 +18,14 @@ import json
 from system.socket import kirim_notifikasi
 from system import cloudinary   
 import cloudinary.uploader
+from groq import Groq
+from dotenv import load_dotenv
+import hashlib, base64
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+import replicate
+import html
+
 
 
 
@@ -34,6 +42,10 @@ mongo = PyMongo(app)
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+load_dotenv()
+ai_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -88,6 +100,50 @@ def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
+def decrypt_message(encrypted, password):
+    # 1) Buang whitespace / pastikan '+' tetap utuh
+    encrypted = encrypted.strip().replace(' ', '+')
+
+    try:
+        ct_bytes = base64.b64decode(encrypted)
+    except Exception:
+        return "[error decoding]"
+
+    # kalau nggak pakai salted header, kembalikan langsung
+    if not ct_bytes.startswith(b"Salted__"):
+        try:
+            return ct_bytes.decode("utf-8")
+        except:
+            return "[error decoding]"
+
+    salt = ct_bytes[8:16]
+    data = ct_bytes[16:]
+
+    # helper KDF yang bisa flip order
+    def derive(pass_first=True):
+        d = b""
+        key_iv = b""
+        while len(key_iv) < 32 + 16:
+            if pass_first:
+                block = hashlib.md5(d + password.encode() + salt).digest()
+            else:
+                block = hashlib.md5(d + salt + password.encode()).digest()
+            d = block
+            key_iv += block
+        return key_iv[:32], key_iv[32:48]
+
+    # coba dua‑dua: pass+salt dulu, kalau gagal coba salt+pass
+    for pass_first in (True, False):
+        key, iv = derive(pass_first)
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        try:
+            pt = unpad(cipher.decrypt(data), AES.block_size)
+            return pt.decode("utf-8")
+        except ValueError:
+            continue
+
+    return "[error decoding]"
+    
 def accept_request_friend(sender_id, receiver_id):
     # Cek apakah sudah ada permintaan pertemanan
     existing_request = mongo.db.friend_requests.find_one({
@@ -107,6 +163,17 @@ def accept_request_friend(sender_id, receiver_id):
             'user_id': sender_id,
             'friend_id': receiver_id
         })
+        
+def get_user_pic(user_id):
+    try:
+        user = mongo.db.user.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            return url_for('static', filename='default.png')
+        return user.get("profile_picture", url_for('static', filename='default.png'))
+    except Exception as e:
+        print("get_user_pic error:", e)
+        return url_for('static', filename='default.png')
+
           
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -123,6 +190,8 @@ app.config['MAIL_MAX_EMAILS'] = None
 mail = Mail(app)
 
 POST_PER_PAGE = 5
+replicate_client = replicate.Client(api_token="r8_V9fMr0HmdbiylBgzqZmp5or1h316W5Z3kcCpC")
+
 
 # Decorator untuk proteksi route, cek session['user_id']
 def login_required(f):
@@ -233,77 +302,246 @@ def reset_password(token):
 @login_required
 def post():
     if request.method == "POST":
-        text = request.form.get("text")
-        image = request.files.get("image")
+        # 1. Ambil field dari form
+        text    = request.form.get("text")
+        image   = request.files.get("image")
         privasi = request.form.get("privasi", "Publik")
-        
+
         image_url = None
-        if image and image.filename != "":
+        if image and image.filename:
             upload_result = cloudinary.uploader.upload(image)
             image_url = upload_result.get("secure_url")
-            
             print('gambar berhasil di upload', image_url)
 
-            
-        tag_json = request.form.get("tag_users", "[]")
         try:
-            tag_list = json.loads(tag_json)
-        except json.JSONDecodeError:    
+            tag_list = json.loads(request.form.get("tag_users", "[]"))
+        except json.JSONDecodeError:
             tag_list = []
-            
-                
+
+        tag_users = []
+        for tid in tag_list:
+            if not ObjectId.is_valid(tid):
+                continue
+            u = mongo.db.user.find_one(
+                {"_id": ObjectId(tid)},
+                {"full_name": 1}
+            )
+            if u:
+                tag_users.append({
+                    "_id": u["_id"],
+                    "full_name": u["full_name"]
+                })
+
         post_data = {
-            "user_id": ObjectId(session["user_id"]),
+            "user_id":  ObjectId(session["user_id"]),
             "full_name": session["full_name"],
-            "email": session["email"],
-            "text": text,
-            "image": image_url,
-            "privasi": privasi,
-            "tag_users": [ObjectId(tid) for tid in tag_list],  # list of ObjectId
+            "email":     session["email"],
+            "text":      text,
+            "image":     image_url,
+            "privasi":   privasi,
+            "tag_users": tag_users,              
             "timestamp": datetime.utcnow(),
             "reactions": {
-                "like": [],
-                "love": [],
-                "haha": [],
-                "sad": [],
+                "like":  [],
+                "love":  [],
+                "haha":  [],
+                "sad":   [],
                 "angry": []
             }
         }
         result = mongo.db.posts.insert_one(post_data)
         post_id = result.inserted_id
-        
-        for tid in tag_list:
-            if not ObjectId.is_valid(tid):
-                continue
-            to_user_id = ObjectId(tid)
-            
-            user_pengirim = mongo.db.user.find_one({"_id": ObjectId(session["user_id"])})
-            if user_pengirim:
-                foto_pengirim = user_pengirim.get("profile_picture", "/static/default.png")
-            else:
-                foto_pengirim = "/static/default.png"
+
+       
+        sender = mongo.db.user.find_one(
+            {"_id": ObjectId(session["user_id"])},
+            {"profile_picture": 1}
+        )
+        foto_pengirim = sender.get("profile_picture", "/static/default.png")
+
+        for tag in tag_users:
+            to_user_id = tag["_id"]
 
             notification = {
-                "type": "tag",
-                "user_id": ObjectId(session["user_id"]),   
-                "to_user_id": to_user_id,                
-                "post_id": post_id,
-                "timestamp": datetime.utcnow(),
-                "is_read": False
+                "type":       "tag",
+                "user_id":    ObjectId(session["user_id"]),
+                "to_user_id": to_user_id,
+                "post_id":    post_id,
+                "timestamp":  datetime.utcnow(),
+                "is_read":    False
             }
             mongo.db.notifications.insert_one(notification)
-            
-            notif_data = {
-                "type": "tag",
-                "full_name": session["full_name"],
-                "profile_picture": foto_pengirim,
-                "post_id": str(post_id),
-                "timestamp": notification["timestamp"].isoformat()
-            }
-            kirim_notifikasi(socketio, str(to_user_id), notif_data)
 
-        
+            notif_data = {
+                "type":            "tag",
+                "full_name":       session["full_name"],
+                "profile_picture": foto_pengirim,
+                "post_id":         str(post_id),
+                "timestamp":       notification["timestamp"].isoformat()
+            }
+            kirim_notifikasi(
+                socketio,
+                str(to_user_id),
+                notif_data
+            )
+
     return redirect(url_for("dashboard"))
+
+@app.route("/chat", methods=["GET", "POST"])
+@login_required
+def chat():
+    user_id = session.get("user_id")
+
+    if request.method == "POST":
+        data = request.get_json()
+
+        if data and "message" in data and "receiver_id" not in data:
+            message = data.get("message")
+
+            # === Cek jika permintaan generate gambar ===
+            if message.lower().startswith("gambar:"):
+                prompt = message[7:].strip()
+                try:
+                    output = replicate_client.run(
+                        "black-forest-labs/flux-dev",
+                        input={"prompt": prompt}
+                    )
+                    image_url = str(output)
+                    reply = f"<img src='{image_url}' style='max-width:100%; border-radius:10px; width:400px;'>"
+                except Exception as e:
+                    reply = f"Gagal membuat gambar: {str(e)}"
+
+            else:
+                response = ai_client.chat.completions.create(
+                    model="deepseek-r1-distill-llama-70b",
+                    messages=[{"role": "user", "content": message}]
+                )
+                ai_reply = response.choices[0].message.content
+                reply = ai_reply.replace("<think>", "").replace("</think>", "")
+
+            # Simpan riwayat ke database
+            mongo.db.chat_history.insert_one({
+                "user_id": user_id,
+                "message": message,
+                "reply": reply,
+                "timestamp": datetime.utcnow()
+            })
+
+            return jsonify({"reply": reply})
+
+        # === User-to-User Chat ===
+        elif {"sender_id", "receiver_id", "message"}.issubset(data.keys()):
+            sender_id   = data["sender_id"]
+            receiver_id = data["receiver_id"]
+            message = html.escape(data["message"])
+
+            if not all([sender_id, receiver_id, message]):
+                return jsonify({"error": "Data tidak lengkap"}), 400
+
+            mongo.db.user_chats.insert_one({
+                "sender_id": sender_id,
+                "receiver_id": receiver_id,
+                "message": message,
+                "timestamp": datetime.utcnow()
+            })
+
+            return jsonify({"status": "Pesan disimpan", "encrypted": message})
+
+    
+    chat_logs = list(mongo.db.chat_history.find({"user_id": user_id}).sort("timestamp", 1))
+    
+   
+    
+    current_user = mongo.db.user.find_one({"_id": ObjectId(user_id)})
+    users = list(mongo.db.user.find())
+
+    accepted_friends = list(mongo.db.friend_requests.find({
+        "$or": [
+            {"sender_id": user_id, "status": "accepted"},
+            {"receiver_id": user_id, "status": "accepted"}
+        ]
+    }))
+
+    friend_ids = []
+    for f in accepted_friends:
+        if f["sender_id"] == user_id:
+            friend_ids.append(f["receiver_id"])
+        else:
+            friend_ids.append(f["sender_id"])
+
+    friend_requests = list(mongo.db.friend_requests.find({
+        "receiver_id": user_id,
+        "status": "pending"
+    }))
+    pending_count = len(friend_requests)
+
+    sender_ids = [ObjectId(req["sender_id"]) for req in friend_requests]
+    senders = list(mongo.db.user.find({"_id": {"$in": sender_ids}}))
+    senders_dict = {str(sender["_id"]): sender for sender in senders}
+
+    for req in friend_requests:
+        req["sender_data"] = senders_dict.get(req["sender_id"])
+
+    friend_users = list(mongo.db.user.find({
+        "_id": {"$in": [ObjectId(fid) for fid in friend_ids]}
+    }))
+
+    friend_list_data = []
+    for f in friend_users:
+        pic = f.get("profile_picture", "").replace("\\", "/")
+        pic = re.sub(r'^/*static/*', '', pic)
+        if not pic.strip():
+            pic = "default.png"
+        if not pic.startswith("uploads/"):
+            pic = f"uploads/{pic}"
+        pic_url = url_for('static', filename=pic)
+
+        friend_list_data.append({
+            "_id": str(f["_id"]),
+            "full_name": f.get("full_name", ""),
+            "profile_picture": pic_url
+        })
+
+    return render_template("chat/chat.html",
+                           full_name=session.get("full_name"),
+                           email=session.get("email"),
+                           req=friend_requests,
+                           friend_list_data=friend_list_data,
+                           user=current_user,
+                           chat_logs=chat_logs,
+                           chats=[])  # 🔥 Kirim array kosong
+    
+
+@app.route("/chat/history/<receiver_id>")
+@login_required
+def get_chat_history(receiver_id):
+    user_id = session.get("user_id")
+    AES_KEY = "$afitri&D1N1"
+
+    chats = list(mongo.db.user_chats.find({
+        "$or": [
+            {"sender_id": user_id, "receiver_id": receiver_id},
+            {"sender_id": receiver_id, "receiver_id": user_id}
+        ]
+    }).sort("timestamp", 1))
+
+    for chat in chats:
+        encrypted = chat.get("message", "")
+        try:
+            chat["message"] = decrypt_message(encrypted, AES_KEY)
+        except Exception as e:
+            chat["message"] = "❗Pesan terenkripsi (gagal dekripsi)"
+            print("Decryption error:", e)
+
+        chat["_id"] = str(chat["_id"])
+        chat["timestamp"] = chat["timestamp"].isoformat()
+        chat["sender_pic"] = get_user_pic(chat["sender_id"])
+        chat["receiver_pic"] = get_user_pic(chat["receiver_id"])
+
+    return jsonify(chats)
+
+
+
 
 @app.route("/notifications", methods=["GET"])
 @login_required
@@ -1206,7 +1444,6 @@ def dashboard():
         if not pic.startswith("uploads/"):
             pic = f"uploads/{pic}"
 
-        # Sekali wrap jadi URL absolut
         pic_url = url_for('static', filename=pic)
 
         friend_list_data.append({
@@ -1241,3 +1478,4 @@ def logout():
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
+

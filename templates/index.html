@@ -465,7 +465,7 @@
                                   class="dropdown-item"
                                   href="#"
                                   data-bs-toggle="modal"
-                                  data-bs-target="#post-modal"
+                                  data-bs-target="#locationModal"
                                   >Check in</a
                                 >
                                 <a
@@ -566,7 +566,10 @@
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                   >
-                                    <i class="bi bi-people-fill me-1"></i> Teman
+                                    <i class="bi bi-globe me-1"></i>
+                                    <span id="privacyDropdownLabel"
+                                      >Publik</span
+                                    >
                                   </button>
                                   <ul
                                     class="dropdown-menu"
@@ -577,24 +580,32 @@
                                         class="dropdown-item"
                                         href="#"
                                         data-value="Publik"
-                                        >Publik</a
+                                        data-icon="bi-globe"
                                       >
+                                        <i class="bi bi-globe me-2"></i>Publik
+                                      </a>
                                     </li>
                                     <li>
                                       <a
                                         class="dropdown-item"
                                         href="#"
                                         data-value="Teman"
-                                        >Teman</a
+                                        data-icon="bi-people-fill"
                                       >
+                                        <i class="bi bi-people-fill me-2"></i
+                                        >Teman
+                                      </a>
                                     </li>
                                     <li>
                                       <a
                                         class="dropdown-item"
                                         href="#"
                                         data-value="Hanya Saya"
-                                        >Hanya Saya</a
+                                        data-icon="bi-lock-fill"
                                       >
+                                        <i class="bi bi-lock-fill me-2"></i
+                                        >Hanya Saya
+                                      </a>
                                     </li>
                                   </ul>
                                   <input
@@ -738,7 +749,13 @@
                               </li>
 
                               <li class="col-md-6 mb-3">
-                                <a href="/check-in" class="upload-option">
+                                <a
+                                  href=""
+                                  class="upload-option"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#locationModal"
+                                  data-bs-dismiss="modal"
+                                >
                                   <img
                                     src="static/assets/images/small/10.png"
                                     alt="icon"
@@ -918,7 +935,8 @@
                                 <h5 class="mb-0 d-inline-block">
                                   {{ post.full_name }} {% if post.tag_users %}
                                   <span class="text-secondary"
-                                    >Bersama {{ post.tag_users|join(', ')
+                                    >Bersama {{ post.tag_users |
+                                    map(attribute='full_name') | join(', ')
                                     }}</span
                                   >
                                   {% endif %}
@@ -1017,18 +1035,24 @@
                       </div>
                       <div class="user-post">
                         {% if post.image is string %}
+                        <!-- Jika image berupa string URL -->
                         <img
                           src="{{ post.image }}"
                           alt="post-image"
                           class="img-fluid rounded w-100"
                         />
-                        {% elif post.image|length == 1 %}
+
+                        {% elif post.image is sequence and post.image|length ==
+                        1 %}
+                        <!-- Jika image adalah list dengan 1 gambar -->
                         <img
                           src="{{ post.image[0].replace('\\', '/') }}"
                           alt="post-image"
                           class="img-fluid rounded w-100"
                         />
-                        {% else %}
+
+                        {% elif post.image is sequence and post.image|length > 1
+                        %}
                         <div class="d-grid grid-rows-2 grid-flow-col gap-3">
                           {% for image in post.image %}
                           <div class="row-span-1">
@@ -1040,6 +1064,7 @@
                           </div>
                           {% endfor %}
                         </div>
+
                         {% endif %}
                       </div>
                       <div class="comment-area mt-3">
@@ -1589,6 +1614,7 @@
               class="btn btn-light rounded-circle p-2 shadow-sm me-2"
               data-bs-dismiss="modal"
               aria-label="Close"
+              id="backToPost"
               style="width: 36px; height: 36px"
             >
               <i class="fas fa-arrow-left text-dark" style="display: flex"></i>
@@ -1666,824 +1692,881 @@
         </div>
       </div>
     </div>
+    <div
+      class="modal fade"
+      id="locationModal"
+      tabindex="-1"
+      aria-labelledby="locationModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content rounded-4 shadow-sm">
+          <!-- Header -->
+          <div class="modal-header border-bottom">
+            <button
+              type="button"
+              class="btn btn-light rounded-circle p-2 shadow-sm me-2"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+              style="width: 36px; height: 36px"
+            >
+              <i class="fas fa-arrow-left text-dark d-flex"></i>
+            </button>
+            <h5 class="modal-title w-100 text-center" id="locationModalLabel">
+              Cari lokasi
+            </h5>
+            <div style="width: 32px"></div>
+          </div>
+
+          <!-- Body -->
+          <div class="modal-body">
+            <!-- Search Input -->
+            <form class="d-flex align-items-center gap-2 mb-3">
+              <div class="input-group rounded-pill bg-light flex-grow-1">
+                <span class="input-group-text bg-light border-0">
+                  <i class="fas fa-search text-muted"></i>
+                </span>
+                <input
+                  type="search"
+                  id="searchLocationInput"
+                  class="form-control border-0 bg-light"
+                  placeholder="Di mana Anda berada?"
+                  autocomplete="off"
+                />
+              </div>
+            </form>
+
+            <!-- Suggested Locations -->
+            <p class="text-uppercase text-muted fw-bold small mb-2">
+              Disarankan
+            </p>
+            <div
+              id="locationList"
+              class="list-group"
+              style="max-height: 300px; overflow-y: auto"
+            >
+              <label
+                class="list-group-item d-flex align-items-start suggestion-item"
+                data-name=""
+                data-address=""
+              >
+                <i class="fas fa-map-marker-alt text-primary me-3 mt-1"></i>
+                <div>
+                  <div class="fw-semibold text-dark"></div>
+                  <div class="text-muted small"></div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Input hidden di form utama -->
 
     <script>
-      // ====================================
-      // 0. Siapkan var socket secara global
-      // ====================================
-      let socket;
+         // ====================================
+         // 0. Siapkan var socket secara global
+         // ====================================
+         let socket;
 
-      // ====================================
-      // 1. Toggle Send/Like Button (global)
-      // ====================================
-      function toggleSendButton() {
-        const input   = document.getElementById("chat-input");
-        const likeBtn = document.getElementById("like-button");
-        const sendBtn = document.getElementById("send-button");
-        if (!input || !likeBtn || !sendBtn) return;
+         // ====================================
+         // 1. Toggle Send/Like Button (global)
+         // ====================================
+         function toggleSendButton() {
+           const input   = document.getElementById("chat-input");
+           const likeBtn = document.getElementById("like-button");
+           const sendBtn = document.getElementById("send-button");
+           if (!input || !likeBtn || !sendBtn) return;
 
-        if (input.value.trim()) {
-          likeBtn.classList.add("d-none");
-          sendBtn.classList.remove("d-none");
-        } else {
-          likeBtn.classList.remove("d-none");
-          sendBtn.classList.add("d-none");
-        }
-      }
+           if (input.value.trim()) {
+             likeBtn.classList.add("d-none");
+             sendBtn.classList.remove("d-none");
+           } else {
+             likeBtn.classList.remove("d-none");
+             sendBtn.classList.add("d-none");
+           }
+         }
 
-      // =========================
-        // 6. Kirim Pesan
-        // =========================
-        function sendMessage() {
-          const AES_KEY      = "$afitri&D1N1";
-          const senderIdElem = document.getElementById("sender-id");
-          const receiverElem = document.getElementById("receiver-id");
-          const inputElem    = document.getElementById("chat-input");
+         // =========================
+           // 6. Kirim Pesan
+           // =========================
+           function sendMessage() {
+             const AES_KEY      = "$afitri&D1N1";
+             const senderIdElem = document.getElementById("sender-id");
+             const receiverElem = document.getElementById("receiver-id");
+             const inputElem    = document.getElementById("chat-input");
 
-          if (!senderIdElem || !receiverElem || !inputElem) return;
+             if (!senderIdElem || !receiverElem || !inputElem) return;
 
-          const senderId   = senderIdElem.value;
-          const receiverId = receiverElem.value;
-          const rawMessage = inputElem.value.trim();
-          if (!rawMessage) return;
+             const senderId   = senderIdElem.value;
+             const receiverId = receiverElem.value;
+             const rawMessage = inputElem.value.trim();
+             if (!rawMessage) return;
 
-          const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
-          socket.emit("send_message", {
-            sender_id:   senderId,
-            receiver_id: receiverId,
-            message:     encryptedMessage
-          });
+             const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
+             socket.emit("send_message", {
+               sender_id:   senderId,
+               receiver_id: receiverId,
+               message:     encryptedMessage
+             });
 
-          // Tampilkan langsung di sisi pengirim
-          const chatBody = document.querySelector("#chat-box .flex-grow-1");
-          if (chatBody) {
-            const messageElement = document.createElement("div");
-            messageElement.classList.add("text-end", "mb-2");
+             // Tampilkan langsung di sisi pengirim
+             const chatBody = document.querySelector("#chat-box .flex-grow-1");
+             if (chatBody) {
+               const messageElement = document.createElement("div");
+               messageElement.classList.add("text-end", "mb-2");
 
-            chatBody.appendChild(messageElement);
-            chatBody.scrollTop = chatBody.scrollHeight;
-          }
+               chatBody.appendChild(messageElement);
+               chatBody.scrollTop = chatBody.scrollHeight;
+             }
 
-          inputElem.value = "";
-          toggleSendButton();
-        }
+             inputElem.value = "";
+             toggleSendButton();
+           }
 
-        const backBtn = document.getElementById("backToPost");
-        if (backBtn) {
-          backBtn.addEventListener("click", function () {
-            const tagFriendModal  = bootstrap.Modal.getInstance(document.getElementById("tagFriendModal"));
-            const createPostModal = new bootstrap.Modal(document.getElementById("post-modal"));
-            if (tagFriendModal) tagFriendModal.hide();
-            if (createPostModal) createPostModal.show();
-          });
-        }
+           const backBtn = document.getElementById("backToPost");
+           if (backBtn) {
+             backBtn.addEventListener("click", function () {
+               const tagFriendModal  = bootstrap.Modal.getInstance(document.getElementById("tagFriendModal"));
+               const createPostModal = new bootstrap.Modal(document.getElementById("post-modal"));
+               if (tagFriendModal) tagFriendModal.hide();
+               if (createPostModal) createPostModal.show();
+             });
+           }
 
-        // =========================
-        // 7. Reaction ke Post
-        // =========================
-        window.reactToPost = function (postId, reaction) {
-          fetch(`/react/${postId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reaction })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.message === "Reaction updated successfully!") {
-              const iconMap = {
-                like:   "01.png",
-                love:   "02.png",
-                happy:  "03.png",
-                haha:   "04.png",
-                think:  "05.png",
-                sad:    "06.png",
-                lovely: "07.png"
-              };
-              const iconElem = document.querySelector(`#reaction-icon-${postId}`);
-              if (iconElem) {
-                iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
-              }
-            }
-          })
-          .catch(console.error);
-        };
+           document.querySelectorAll('.dropdown-item').forEach(function(item) {
+             item.addEventListener('click', function(e) {
+               e.preventDefault();
+               const pilihan = this.getAttribute('data-value');
+               document.getElementById('privacyInput').value = pilihan;
+               const btn = document.getElementById('privacyDropdown');
 
-      const sendBtnElem = document.getElementById("send-button");
-      if (sendBtnElem) {
-        sendBtnElem.addEventListener("click", sendMessage);
-      }
+               if (pilihan === 'HanyaSaya') {
+                 btn.innerText = 'Hanya Saya';
+               } else {
+                 btn.innerText = pilihan;
+               }
+             });
+           });
+
+           // =========================
+           // 7. Reaction ke Post
+           // =========================
+           window.reactToPost = function (postId, reaction) {
+             fetch(`/react/${postId}`, {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ reaction })
+             })
+             .then(res => res.json())
+             .then(data => {
+               if (data.message === "Reaction updated successfully!") {
+                 const iconMap = {
+                   like:   "01.png",
+                   love:   "02.png",
+                   happy:  "03.png",
+                   haha:   "04.png",
+                   think:  "05.png",
+                   sad:    "06.png",
+                   lovely: "07.png"
+                 };
+                 const iconElem = document.querySelector(`#reaction-icon-${postId}`);
+                 if (iconElem) {
+                   iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
+                 }
+               }
+             })
+             .catch(console.error);
+           };
+
+         const sendBtnElem = document.getElementById("send-button");
+         if (sendBtnElem) {
+           sendBtnElem.addEventListener("click", sendMessage);
+         }
 
 
-      // ====================================
-      // 2. Menunggu DOM siap
-      // ====================================
-      document.addEventListener("DOMContentLoaded", function () {
-        // ------------------------------------
-        // 2.a. Data Teman & Render Status Online
-        // ------------------------------------
-        const friendList = {{ friend_list_data | tojson | default('[]') }};
+         // ====================================
+         // 2. Menunggu DOM siap
+         // ====================================
+         document.addEventListener("DOMContentLoaded", function () {
+           // ------------------------------------
+           // 2.a. Data Teman & Render Status Online
+           // ------------------------------------
+           const friendList = {{ friend_list_data | tojson | default('[]') }};
 
-        function renderFriends(onlineIds) {
-          const container = document.querySelector(".media-height");
-          if (!container) return;
-          container.innerHTML = "";
-          friendList.forEach(f => {
-            const isOnline   = onlineIds.includes(f._id);
-            const dotClass   = isOnline ? "status-online" : "";
-            const statusText = isOnline ? "Online" : "Offline";
-            const profilePic = f.profile_picture;
+           function renderFriends(onlineIds) {
+             const container = document.querySelector(".media-height");
+             if (!container) return;
+             container.innerHTML = "";
+             friendList.forEach(f => {
+               const isOnline   = onlineIds.includes(f._id);
+               const dotClass   = isOnline ? "status-online" : "";
+               const statusText = isOnline ? "Online" : "Offline";
+               const profilePic = f.profile_picture;
 
-            const html = `
-              <div class="d-flex align-items-center mb-4"
-                   onclick="openChat('${f._id}', '${f.full_name}', '${profilePic}')">
-                <div class="iq-profile-avatar ${dotClass}">
-                  <img class="rounded-circle avatar-50"
-                       src="${profilePic}"
-                       alt="${f.full_name}" />
-                </div>
-                <div class="ms-3">
-                  <h6 class="mb-0">${f.full_name}</h6>
-                  <p class="mb-0">${statusText}</p>
-                </div>
-              </div>
-            `;
-            container.insertAdjacentHTML("beforeend", html);
-          });
-        }
+               const html = `
+                 <div class="d-flex align-items-center mb-4"
+                      onclick="openChat('${f._id}', '${f.full_name}', '${profilePic}')">
+                   <div class="iq-profile-avatar ${dotClass}">
+                     <img class="rounded-circle avatar-50"
+                          src="${profilePic}"
+                          alt="${f.full_name}" />
+                   </div>
+                   <div class="ms-3">
+                     <h6 class="mb-0">${f.full_name}</h6>
+                     <p class="mb-0">${statusText}</p>
+                   </div>
+                 </div>
+               `;
+               container.insertAdjacentHTML("beforeend", html);
+             });
+           }
 
-        // Render awal (semua dianggap offline)
-        renderFriends([]);
+           // Render awal (semua dianggap offline)
+           renderFriends([]);
 
-        // ------------------------------------
-        // 2.b. Inisialisasi Socket.IO
-        // ------------------------------------
-        socket = io({
-          auth: {
-            user_id:   "{{ session.get('user_id') }}",
-            full_name: "{{ session.get('full_name') }}"
-          }
-        });
+           // ------------------------------------
+           // 2.b. Inisialisasi Socket.IO
+           // ------------------------------------
+           socket = io({
+             auth: {
+               user_id:   "{{ session.get('user_id') }}",
+               full_name: "{{ session.get('full_name') }}"
+             }
+           });
 
-        socket.on("connect", () => {
-          socket.emit("request_online_users");
-        });
+           socket.on("connect", () => {
+             socket.emit("request_online_users");
+           });
 
-        socket.on("online_users", users => {
-          const onlineIds = users.map(u => u.user_id);
-          renderFriends(onlineIds);
-        });
-        socket.on("user_connected",    () => socket.emit("request_online_users"));
-        socket.on("user_disconnected", () => socket.emit("request_online_users"));
+           socket.on("online_users", users => {
+             const onlineIds = users.map(u => u.user_id);
+             renderFriends(onlineIds);
+           });
+           socket.on("user_connected",    () => socket.emit("request_online_users"));
+           socket.on("user_disconnected", () => socket.emit("request_online_users"));
 
-        // ------------------------------------
-        // 2.c. Fetch Notifikasi → Render
-        // ------------------------------------
-        fetch("/notifications")
-          .then(response => {
-            if (!response.ok) {
-              return response.text().then(text => {
-                console.error("Response bukan JSON:", text);
-                throw new Error("Gagal memuat notifikasi");
-              });
-            }
-            return response.json();
-          })
-          .then(notifArray => {
-            const badge      = document.getElementById("notif-badge");
-            const countLabel = document.getElementById("notif-count");
-            const notifList  = document.getElementById("notif-list");
-            if (!badge || !countLabel || !notifList) return;
+           // ------------------------------------
+           // 2.c. Fetch Notifikasi → Render
+           // ------------------------------------
+           fetch("/notifications")
+             .then(response => {
+               if (!response.ok) {
+                 return response.text().then(text => {
+                   console.error("Response bukan JSON:", text);
+                   throw new Error("Gagal memuat notifikasi");
+                 });
+               }
+               return response.json();
+             })
+             .then(notifArray => {
+               const badge      = document.getElementById("notif-badge");
+               const countLabel = document.getElementById("notif-count");
+               const notifList  = document.getElementById("notif-list");
+               if (!badge || !countLabel || !notifList) return;
 
-            let unreadCount = notifArray.filter(n => n.is_read === false).length;
-            if (unreadCount > 0) {
-              badge.textContent   = unreadCount;
-              badge.style.display = "inline-block";
-            }
-            countLabel.textContent = notifArray.length;
+               let unreadCount = notifArray.filter(n => n.is_read === false).length;
+               if (unreadCount > 0) {
+                 badge.textContent   = unreadCount;
+                 badge.style.display = "inline-block";
+               }
+               countLabel.textContent = notifArray.length;
 
-            notifArray.forEach(n => {
-              const a = document.createElement("a");
-              a.href = `/post/${n.post_id}`;
-              a.className = "iq-sub-card d-block";
+               notifArray.forEach(n => {
+                 const a = document.createElement("a");
+                 a.href = `/post/${n.post_id}`;
+                 a.className = "iq-sub-card d-block";
 
-              const unreadDot = (!n.is_read)
-                ? `<span class="bg-primary rounded-circle"
-                          style="width:8px; height:8px; display:inline-block; margin-left:5px;"></span>`
-                : "";
+                 const unreadDot = (!n.is_read)
+                   ? `<span class="bg-primary rounded-circle"
+                             style="width:8px; height:8px; display:inline-block; margin-left:5px;"></span>`
+                   : "";
 
-              a.innerHTML = `
-                <div class="d-flex align-items-center">
-                  <img src="${n.profile_picture}" alt="avatar" class="avatar-40 rounded-circle" />
-                  <div class="ms-3 w-100">
-                    <h6 class="mb-0">${n.full_name} ${unreadDot}</h6>
-                    <p class="mb-0 text-truncate">
-                      ${n.type === "tag"
-                        ? "Menandai Anda Dalam Postingan"
-                        : "Menyukai postingan Anda pada"}
-                    </p>
-                    <small class="float-right font-size-12 text-muted">${n.time}</small>
-                  </div>
-                </div>`;
-              notifList.appendChild(a);
-            });
-          })
-          .catch(err => console.error("Fetch notifikasi gagal:", err));
+                 a.innerHTML = `
+                   <div class="d-flex align-items-center">
+                     <img src="${n.profile_picture}" alt="avatar" class="avatar-40 rounded-circle" />
+                     <div class="ms-3 w-100">
+                       <h6 class="mb-0">${n.full_name} ${unreadDot}</h6>
+                       <p class="mb-0 text-truncate">
+                         ${n.type === "tag"
+                           ? "Menandai Anda Dalam Postingan"
+                           : "Menyukai postingan Anda pada"}
+                       </p>
+                       <small class="float-right font-size-12 text-muted">${n.time}</small>
+                     </div>
+                   </div>`;
+                 notifList.appendChild(a);
+               });
+             })
+             .catch(err => console.error("Fetch notifikasi gagal:", err));
 
-        socket.on("notify", data => {
-          // Saat notifikasi baru datang via Socket.IO
-          const badge      = document.getElementById("notif-badge");
-          const countLabel = document.getElementById("notif-count");
-          const notifList  = document.getElementById("notif-list");
-          if (!badge || !countLabel || !notifList) return;
+           socket.on("notify", data => {
+             // Saat notifikasi baru datang via Socket.IO
+             const badge      = document.getElementById("notif-badge");
+             const countLabel = document.getElementById("notif-count");
+             const notifList  = document.getElementById("notif-list");
+             if (!badge || !countLabel || !notifList) return;
 
-          let currentBadge = parseInt(badge.textContent || "0", 10) + 1;
-          let currentCount = parseInt(countLabel.textContent || "0", 10) + 1;
-          badge.textContent   = currentBadge;
-          badge.style.display = "inline-block";
-          countLabel.textContent = currentCount;
+             let currentBadge = parseInt(badge.textContent || "0", 10) + 1;
+             let currentCount = parseInt(countLabel.textContent || "0", 10) + 1;
+             badge.textContent   = currentBadge;
+             badge.style.display = "inline-block";
+             countLabel.textContent = currentCount;
 
-          const a = document.createElement("a");
-          a.href = `/post/${data.post_id}`;
-          a.className = "iq-sub-card d-block";
-          a.innerHTML = `
-            <div class="d-flex align-items-center">
-              <img src="${data.profile_picture || '/static/default.png'}"
-                   alt="avatar"
-                   class="avatar-40 rounded-circle" />
-              <div class="ms-3 w-100">
-                <h6 class="mb-0">${data.full_name}
-                  <span class="bg-primary rounded-circle"
-                        style="width:8px;height:8px;display:inline-block;margin-left:5px;"></span>
-                </h6>
-                <p class="mb-0 text-truncate">
-                  ${data.type === "tag"
-                    ? "Menandai Anda Dalam Postingan"
-                    : "Menyukai postingan Anda pada"}
-                </p>
-                <small class="float-right font-size-12 text-muted">${data.time || "Baru saja"}</small>
-              </div>
-            </div>`;
-          notifList.prepend(a);
-        });
+             const a = document.createElement("a");
+             a.href = `/post/${data.post_id}`;
+             a.className = "iq-sub-card d-block";
+             a.innerHTML = `
+               <div class="d-flex align-items-center">
+                 <img src="${data.profile_picture || '/static/default.png'}"
+                      alt="avatar"
+                      class="avatar-40 rounded-circle" />
+                 <div class="ms-3 w-100">
+                   <h6 class="mb-0">${data.full_name}
+                     <span class="bg-primary rounded-circle"
+                           style="width:8px;height:8px;display:inline-block;margin-left:5px;"></span>
+                   </h6>
+                   <p class="mb-0 text-truncate">
+                     ${data.type === "tag"
+                       ? "Menandai Anda Dalam Postingan"
+                       : "Menyukai postingan Anda pada"}
+                   </p>
+                   <small class="float-right font-size-12 text-muted">${data.time || "Baru saja"}</small>
+                 </div>
+               </div>`;
+             notifList.prepend(a);
+           });
 
-        // ------------------------------------
-        // 2.d. Fungsi: Load Chat History dari server
-        // ------------------------------------
-        function loadChatHistory(otherUserId) {
-          const chatBody = document.getElementById("chat-messages");
-          if (!chatBody) return;
-          chatBody.innerHTML = "";
 
-          fetch(`/messages/${otherUserId}`)
-            .then(res => {
-              if (!res.ok) throw new Error("Gagal memuat chat history");
-              return res.json();
-            })
-            .then(messages => {
-              const myId = document.getElementById("sender-id").value;
-              messages.forEach(msg => {
-                const decrypted = msg.message;
-                const isOwn = (msg.sender_id === myId);
+           // ------------------------------------
+           // 2.e. Listener: Menerima Pesan Baru via Socket.IO
+           // ------------------------------------
+           socket.on("new_message", data => {
+         const AES_KEY = "$afitri&D1N1";
+         let decryptedMessage;
 
-                const wrapper = document.createElement("div");
-                wrapper.classList.add("d-flex", "mb-2",
-                  isOwn ? "justify-content-end" : "justify-content-start"
-                );
-
-                if (isOwn) {
-                  // Pesan dari saya → bubble warna primer
-                  wrapper.innerHTML = `
-                    <div class="badge bg-primary text-wrap"
-                         style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
-                      ${decrypted}
-                    </div>
-                    <small class="text-muted ms-2" style="font-size:10px;">
-                      ${new Date(msg.timestamp).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-                    </small>
-                  `;
-                } else {
-                  // Pesan dari lawan chat → tampilkan avatar + bubble sekunder
-                  const avatarSrc = document.getElementById("chat-profile-picture1").src;
-                  wrapper.innerHTML = `
-                    <img src="${avatarSrc}" class="rounded-circle me-2" width="32" height="32" alt="Avatar" />
-                    <div>
-                      <span class="badge bg-secondary text-wrap"
-                            style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
-                        ${decrypted}
-                      </span>
-                      <small class="text-muted d-block" style="font-size:10px;">
-                        ${new Date(msg.timestamp).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-                      </small>
-                    </div>
-                  `;
-                }
-
-                chatBody.appendChild(wrapper);
-              });
-              chatBody.scrollTop = chatBody.scrollHeight;
-            })
-            .catch(err => console.error(err));
-        }
-
-        // ------------------------------------
-        // 2.e. Listener: Menerima Pesan Baru via Socket.IO
-        // ------------------------------------
-        socket.on("new_message", data => {
-          const AES_KEY = "$afitri&D1N1";
-          let decryptedMessage;
-          try {
+         try {
             const bytes = CryptoJS.AES.decrypt(data.message, AES_KEY);
             decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
-          } catch (err) {
+         } catch (err) {
             console.error("❌ Gagal dekripsi pesan:", err);
             decryptedMessage = "❗Pesan terenkripsi (gagal dekripsi)";
-          }
+         }
 
-          function emojiOnly(text) {
-          return /^\p{Extended_Pictographic}+$/u.test(text.trim());
-        }
+         function emojiOnly(text) {
+            return /^\p{Extended_Pictographic}+$/u.test(text.trim());
+         }
 
-          const myId            = document.getElementById("sender-id") ? document.getElementById("sender-id").value : null;
-          const currentReceiver = document.getElementById("receiver-id") ? document.getElementById("receiver-id").value : null;
-          const isOwnMessage    = (data.sender_id === myId);
+         const myId = document.getElementById("sender-id")?.value;
+         const currentReceiver = document.getElementById("receiver-id")?.value;
+         const isOwnMessage = (data.sender_id === myId);
 
-          // Jika chat belum terbuka untuk pengirim, buka otomatis
-          if (!isOwnMessage && data.sender_id !== currentReceiver) {
+         if (!isOwnMessage && data.sender_id !== currentReceiver) {
             openChat(data.sender_id, data.full_name, data.profile_picture);
-          }
+         }
 
-          const chatBody = document.querySelector("#chat-box .flex-grow-1");
-          if (!chatBody) return;
+         const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+         const avatar = data.profile_picture;
 
-          const wrapper = document.createElement("div");
-          wrapper.classList.add("d-flex", "mb-2",
-            isOwnMessage ? "justify-content-end" : "justify-content-start"
-          );
+         const chatSelectors = [
+            "#chat-box .flex-grow-1",
+            "#chatbox6 .chat-content.scroller"
+         ];
 
-          // Render isi pesan
-          if (emojiOnly(decryptedMessage)) {
-            if (isOwnMessage) {
-              wrapper.innerHTML = `<div class="emoji-bubble-sent">${decryptedMessage}</div>`;
-            } else {
-              wrapper.innerHTML = `
-                <img src="${data.profile_picture}"
-                     class="rounded-circle me-2"
-                     width="32"
-                     height="32"
-                     style="margin-top:10px;"
-                     alt="${data.full_name}" />
-                <div class="emoji-bubble-received">${decryptedMessage}</div>
-              `;
+         chatSelectors.forEach(selector => {
+            const chatBody = document.querySelector(selector);
+            if (!chatBody) return;
+
+            let wrapper;
+
+           // 👇 Untuk #chat-box (popup)
+            if (selector === "#chat-box .flex-grow-1") {
+               wrapper = document.createElement("div");
+               wrapper.classList.add("d-flex", "mb-2",
+                  isOwnMessage ? "justify-content-end" : "justify-content-start"
+               );
+
+               // Avatar (hanya jika bukan pesan sendiri)
+               if (!isOwnMessage) {
+                  const img = document.createElement("img");
+                  img.src = avatar;
+                  img.className = "rounded-circle me-2";
+                  img.width = 32;
+                  img.height = 32;
+                  img.style.marginTop = "10px";
+                  img.alt = data.full_name;
+                  wrapper.appendChild(img);
+               }
+
+               const bubble = document.createElement(isOwnMessage ? "div" : "span");
+               bubble.className = "badge bg-primary text-wrap";
+               bubble.style.padding = "12px 20px";
+               bubble.style.borderRadius = "20px";
+               bubble.style.maxWidth = "70%";
+               bubble.style.fontSize = "14px";
+               bubble.textContent = decryptedMessage; // ✅ aman, tidak akan render HTML
+
+               wrapper.appendChild(bubble);
             }
-          } else if (decryptedMessage.includes("<img") && decryptedMessage.includes("gif")) {
-            if (isOwnMessage) {
-              wrapper.innerHTML = `<div>${decryptedMessage}</div>`;
-            } else {
-              wrapper.innerHTML = `
-                <img src="${data.profile_picture}"
-                     class="rounded-circle me-2"
-                     width="32"
-                     height="32"
-                     style="margin-top:10px;"
-                     alt="${data.full_name}" />
-                <div>${decryptedMessage}</div>
-              `;
+
+            // 👇 Untuk chat-content.scroller
+            else {
+               wrapper = document.createElement("div");
+               wrapper.className = isOwnMessage ? "chat d-flex other-user" : "chat chat-left";
+
+               // 🧩 Chat User (avatar dan waktu)
+               const userDiv = document.createElement("div");
+               userDiv.className = "chat-user";
+
+               const avatarLink = document.createElement("a");
+               avatarLink.className = "avatar m-0";
+
+               const avatarImg = document.createElement("img");
+               avatarImg.src = avatar;
+               avatarImg.alt = "avatar";
+               avatarImg.className = "avatar-35";
+
+               avatarLink.appendChild(avatarImg);
+               userDiv.appendChild(avatarLink);
+
+               const timeSpan = document.createElement("span");
+               timeSpan.className = "chat-time mt-1";
+               timeSpan.textContent = timeNow;
+               userDiv.appendChild(timeSpan);
+
+               // 🧩 Chat Detail (bubble)
+               const detailDiv = document.createElement("div");
+               detailDiv.className = "chat-detail";
+
+               const messageDiv = document.createElement("div");
+               messageDiv.className = "chat-message";
+
+               const p = document.createElement("p");
+               p.textContent = decryptedMessage; // ✅ aman dari <h1>, <img>, XSS dll
+
+               messageDiv.appendChild(p);
+               detailDiv.appendChild(messageDiv);
+
+               wrapper.appendChild(userDiv);
+               wrapper.appendChild(detailDiv);
             }
-          } else {
-            if (isOwnMessage) {
-              wrapper.innerHTML = `
-                <div class="badge bg-primary text-wrap"
-                     style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
-                  ${decryptedMessage}
-                </div>`;
-            } else {
-              wrapper.innerHTML = `
-                <img src="${data.profile_picture}"
-                     class="rounded-circle me-2"
-                     width="32"
-                     height="32"
-                     alt="${data.full_name}" />
-                <span class="badge bg-primary text-wrap"
-                      style="padding:12px 20px; border-radius:20px; max-width:70%; font-size:14px;">
-                  ${decryptedMessage}
-                </span>`;
-            }
-          }
-
-          chatBody.appendChild(wrapper);
-          chatBody.scrollTop = chatBody.scrollHeight;
-        });
-
-        // ------------------------------------
-        // 2.f. Fungsi: openChat → Tampilkan Popup & Load History
-        // ------------------------------------
-        window.openChat = function (userId, fullName = "", profilePic = "") {
-          const chatBox = document.getElementById("chat-box");
-          if (!chatBox) return;
-          chatBox.style.display = "flex";
-          chatBox.classList.remove("chat-pop");
-          void chatBox.offsetWidth; // trigger reflow
-          chatBox.classList.add("chat-pop");
-
-          // Set receiver-id
-         const receiverInput = document.getElementById("receiver-id");
-          if (receiverInput) receiverInput.value = userId;
-
-            ["chat-profile-name", "chat-profile-name1"].forEach(id => {
-              const el = document.getElementById(id);
-              if (el && fullName) el.textContent = fullName;
-            });
-            ["chat-profile-picture", "chat-profile-picture1"].forEach(id => {
-              const img = document.getElementById(id);
-              if (img && profilePic) {
-                img.src = profilePic;
-                img.onerror = () => { img.src = "/static/default.png"; };
-              }
-          });
-
-
-        };
-
-        // ------------------------------------
-        // 2.g. Fungsi: closeChat → Sembunyikan Popup
-        // ------------------------------------
-        window.closeChat = function () {
-          const chatBox = document.getElementById("chat-box");
-          if (!chatBox) return;
-          chatBox.style.display = "none";
-          chatBox.classList.remove("chat-pop");
-        };
 
 
 
-        // ------------------------------------
-        // 2.h. Emoji Picker Setup
-        // ------------------------------------
-        const emojiBtn = document.querySelector('button[title="Emoji"]');
-        const picker   = document.getElementById("emoji-picker");
-        const chatInputElem = document.getElementById("chat-input");
-
-        if (emojiBtn && picker) {
-          emojiBtn.addEventListener("click", () => {
-            picker.style.display = (picker.style.display === "none") ? "block" : "none";
-          });
-        }
-        if (picker && chatInputElem) {
-          picker.addEventListener("emoji-click", event => {
-            chatInputElem.value += event.detail.unicode;
-            chatInputElem.focus();
-            toggleSendButton();
-          });
-          document.addEventListener("click", e => {
-            if (!picker.contains(e.target) && !emojiBtn.contains(e.target)) {
-              picker.style.display = "none";
-            }
-          });
-        }
-
-        // ------------------------------------
-        // 2.i. GIF Search dengan GIPHY
-        // ------------------------------------
-        const gifBtn         = document.getElementById("gif-toggle-btn");
-        const gifContainer   = document.getElementById("gif-container");
-        const gifSearchInput = document.getElementById("gif-search");
-        const gifResults     = document.getElementById("gif-results");
-        const senderIdGlobal = document.getElementById("sender-id")?.value;
-
-        if (gifBtn && gifContainer) {
-          gifBtn.addEventListener("click", () => {
-            gifContainer.style.display = (gifContainer.style.display === "none") ? "block" : "none";
-          });
-        }
-
-        if (gifSearchInput && gifResults) {
-          gifSearchInput.addEventListener("input", async () => {
-            const query = gifSearchInput.value.trim();
-            if (!query) {
-              gifResults.innerHTML = "";
-              return;
-            }
-            try {
-              const API_KEY = "HST1JijGbqLRqfdi2yT0NN98QIErIZjS";
-              const response = await fetch(
-                `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${encodeURIComponent(query)}&limit=10`
-              );
-              const data = await response.json();
-              gifResults.innerHTML = "";
-
-              data.data.forEach(gif => {
-                const imgUrl = gif.images.fixed_height.url;
-                const imgEl  = document.createElement("img");
-                imgEl.src    = imgUrl;
-                imgEl.style.cursor = "pointer";
-                imgEl.classList.add("m-1");
-                imgEl.width  = 100;
-                imgEl.height = 100;
-
-                imgEl.addEventListener("click", () => {
-                  const AES_KEY = "$afitri&D1N1";
-                  const receiverIdElem = document.getElementById("receiver-id");
-                  if (!receiverIdElem) return;
-                  const receiverId = receiverIdElem.value;
-                  if (!receiverId) {
-                    return alert("Pilih dulu teman yang ingin diajak chat!");
-                  }
-
-                  const rawGifMessage       = `<img src="${imgUrl}" alt="gif" class="chat-bubble gif-message">`;
-                  const encryptedGifMessage = CryptoJS.AES.encrypt(rawGifMessage, AES_KEY).toString();
-
-                  socket.emit("send_message", {
-                    sender_id:   senderIdGlobal,
-                    receiver_id: receiverId,
-                    message:     encryptedGifMessage
-                  });
-
-                  // Tutup GIF container
-                  gifContainer.style.display = "none";
-                });
-
-                gifResults.appendChild(imgEl);
-              });
-            } catch (error) {
-              console.error("❌ Error fetch GIF:", error);
-            }
-          });
-        }
-
-        // ------------------------------------
-        // 2.j. Tombol Like (Emoji “👍”)
-        // ------------------------------------
-        const likeBtnElem = document.getElementById("like-button");
-        if (likeBtnElem) {
-          likeBtnElem.addEventListener("click", () => {
-            const AES_KEY     = "$afitri&D1N1";
-            const senderId    = document.getElementById("sender-id")?.value;
-            const receiverId  = document.getElementById("receiver-id")?.value;
-            if (!senderId || !receiverId) {
-              return alert("Pilih dulu teman yang ingin diajak chat!");
-            }
-            const likeEmoji     = "👍";
-            const encryptedLike = CryptoJS.AES.encrypt(likeEmoji, AES_KEY).toString();
-
-            socket.emit("send_message", {
-              sender_id:   senderId,
-              receiver_id: receiverId,
-              message:     encryptedLike
-            });
-          });
-        }
-
-        // ------------------------------------
-        // 2.k. Preview Upload Gambar di Chat
-        // ------------------------------------
-        const fileInput = document.getElementById("photo-upload");
-        const previewContainer = document.getElementById("image-preview-container");
-        const previewImage = document.getElementById("image-preview");
-
-        fileInput.addEventListener("change", function () {
-          const file = this.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.addEventListener("load", function () {
-              previewImage.src = reader.result;
-              previewImage.style.display = "block";
-              previewContainer.style.display = "flex";
-            });
-            reader.readAsDataURL(file);
-          } else {
-            previewContainer.style.display = "none";
-          }
-        });
-
-        window.removeImage = function () {
-          fileInput.value = "";
-          previewImage.src = "";
-          previewImage.style.display = "none";
-          previewContainer.style.display = "none";
-        };
-
-        // ------------------------------------
-        // 2.l. Penutup DOMContentLoaded
-        // ------------------------------------
-      }); // <-- End of DOMContentLoaded listener
-
-
-
-      // ====================================
-      // 4. Reaction ke Post (outside DOMContentLoaded)
-      // ====================================
-      window.reactToPost = function (postId, reaction) {
-        fetch(`/react/${postId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reaction })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.message === "Reaction updated successfully!") {
-            const iconMap = {
-              like:   "01.png",
-              love:   "02.png",
-              happy:  "03.png",
-              haha:   "04.png",
-              think:  "05.png",
-              sad:    "06.png",
-              lovely: "07.png"
-            };
-            const iconElem = document.querySelector(`#reaction-icon-${postId}`);
-            if (iconElem) {
-              iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
-            }
-          }
-        })
-        .catch(console.error);
-      };
-      // =========================
-        // 15. Infinite Scroll / Load Post
-        // =========================
-        let currentPage   = {{ current_page|default(1) }};
-        const POSTS_PER_PAGE = {{ posts_per_page|default(5) }};
-        let totalPosts    = {{ total_posts|default(0) }};
-        let loading       = false;
-        let allLoaded     = false;
-
-        function isNearBottom() {
-          const scrollY  = window.scrollY || window.pageYOffset;
-          const vh       = window.innerHeight;
-          const pageH    = document.documentElement.scrollHeight;
-          return scrollY + vh >= pageH - 100;
-        }
-
-        window.addEventListener("scroll", function () {
-          if (allLoaded || loading) return;
-          if (isNearBottom()) {
-            loadMorePosts();
-          }
-        });
-
-        function loadMorePosts() {
-          loading = true;
-          currentPage += 1;
-          $("#loader").show();
-
-          $.ajax({
-            url: "{{ url_for('dashboard') }}",
-            method: "GET",
-            data: {
-              page: currentPage,
-              ajax: 1
-            },
-            success: function (response) {
-              if (!response.trim()) {
-                allLoaded = true;
-                $("#loader").hide();
-                return;
-              }
-              $("#post-container").append(response);
-              loading = false;
-              $("#loader").hide();
-
-              const loadedCount = $(".card").length;
-              if (loadedCount >= totalPosts) {
-                allLoaded = true;
-              }
-            },
-            error: function () {
-              loading = false;
-              $("#loader").hide();
-            }
-          });
-        }
-
-        // =========================
-        // 16. Tag Teman di Postingan
-        // =========================
-       const friendListEl    = document.getElementById("friendList");
-        const doneButton      = document.getElementById("doneTagging");
-        const hiddenInput     = document.getElementById("tagged_users_input");
-        const taggedDisplay   = document.getElementById("taggedDisplay");
-        const searchInput     = document.getElementById("searchFriendInput");
-        const selectedCon     = document.getElementById("selectedFriendsContainer");
-        const selectedFriends = document.getElementById("selectedFriends");
-
-        // Array untuk men‐yimpan teman yang sudah dipilih { id, name }
-        let taggedFriendsArr = [];
-
-        // 1. Ketika user klik salah satu “Saran”:
-        if (friendListEl) {
-          friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
-            item.addEventListener("click", function () {
-              const id   = this.getAttribute("data-id");
-              const name = this.getAttribute("data-name");
-
-              // Jika belum ada di taggedFriendsArr, tambahkan:
-              if (!taggedFriendsArr.some(f => f.id === id)) {
-                taggedFriendsArr.push({ id, name });
-              }
-              // Sembunyikan elemen ini dari daftar saran
-              this.style.display = "none";
-
-              // Render ulang daftar “Ditandai” di modal
-              renderTaggedFriends();
-            });
-          });
-        }
-
-        // 2. Fungsi untuk menampilkan “pill” di area Ditandai:
-        function renderTaggedFriends() {
-          // Jika ada teman ter‐tag, tampilkan container:
-          if (taggedFriendsArr.length > 0) {
-            selectedCon.style.display = "block";
-          } else {
-            selectedCon.style.display = "none";
-          }
-          // Kosongkan dulu isian HTML
-          selectedFriends.innerHTML = "";
-
-          taggedFriendsArr.forEach(friend => {
-            const pill = document.createElement("div");
-            pill.classList.add("tag-pill");
-            pill.innerHTML = `
-              <span>${friend.name}</span>
-              <span class="remove-tag">&times;</span>
-            `;
-            // Ketika ikon × diklik, hapus tag:
-            pill.querySelector(".remove-tag").addEventListener("click", function () {
-              // Buang dari array
-              taggedFriendsArr = taggedFriendsArr.filter(f => f.id !== friend.id);
-              // Cari kembali item di friendList dan tampilkan
-              friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
-                if (item.getAttribute("data-id") === friend.id) {
-                  item.style.display = "";
-                }
-              });
-              renderTaggedFriends();
-            });
-            selectedFriends.appendChild(pill);
-          });
-        }
-
-        // 3. Ketika user klik tombol “Selesai” (id="doneTagging"):
-        if (doneButton && hiddenInput && taggedDisplay) {
-          doneButton.addEventListener("click", function () {
-            // Ambil array ID dan simpan ke hiddenInput dalam bentuk JSON:
-            const ids = taggedFriendsArr.map(f => f.id);
-            hiddenInput.value = JSON.stringify(ids);
-
-            // Siapkan teks “bersama Nama1, Nama2, …”
-            if (taggedFriendsArr.length > 0) {
-              const names = taggedFriendsArr.map(f => f.name).join(", ");
-              taggedDisplay.textContent = "bersama " + names;
-              taggedDisplay.style.display = "inline"; // pastikan tampil di samping nama
-            } else {
-              taggedDisplay.textContent = "";
-              taggedDisplay.style.display = "none";
-            }
-            // Modal otomatis tertutup karena data-bs-dismiss="modal"
-          });
-        }
-
-        if (searchInput && friendListEl) {
-          searchInput.addEventListener("input", function () {
-            const filter = this.value.toLowerCase();
-            friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
-              const name = item.getAttribute("data-name").toLowerCase();
-              if (name.includes(filter) && item.style.display !== "none") {
-                item.style.display = "";
-              } else {
-                item.style.display = "none";
-              }
-            });
-          });
-          }
-          document.getElementById('btn-upload').addEventListener('click', function () {
-          document.getElementById('upload-input').click();
-        });
-
-        document.getElementById('upload-input').addEventListener('change', function (e) {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-              const preview = document.getElementById('preview-img');
-              preview.src = event.target.result;
-
-              document.getElementById('placeholder').style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-        document.getElementById('remove-img').addEventListener('click', function () {
-        const input = document.getElementById('upload-input');
-        const preview = document.getElementById('preview-img');
-
-        // Reset input dan preview
-        input.value = '';
-        preview.src = '';
-        document.getElementById('placeholder').style.display = 'none';
+            chatBody.appendChild(wrapper);
+            chatBody.scrollTop = chatBody.scrollHeight;
+         });
       });
+
+           // ------------------------------------
+           // 2.f. Fungsi: openChat → Tampilkan Popup & Load History
+           // ------------------------------------
+           window.openChat = function (userId, fullName = "", profilePic = "") {
+             const chatBox = document.getElementById("chat-box");
+             if (!chatBox) return;
+             chatBox.style.display = "flex";
+             chatBox.classList.remove("chat-pop");
+             void chatBox.offsetWidth; // trigger reflow
+             chatBox.classList.add("chat-pop");
+
+             // Set receiver-id
+            const receiverInput = document.getElementById("receiver-id");
+             if (receiverInput) receiverInput.value = userId;
+
+               ["chat-profile-name", "chat-profile-name1"].forEach(id => {
+                 const el = document.getElementById(id);
+                 if (el && fullName) el.textContent = fullName;
+               });
+               ["chat-profile-picture", "chat-profile-picture1"].forEach(id => {
+                 const img = document.getElementById(id);
+                 if (img && profilePic) {
+                   img.src = profilePic;
+                   img.onerror = () => { img.src = "/static/default.png"; };
+                 }
+             });
+
+
+           };
+
+           // ------------------------------------
+           // 2.g. Fungsi: closeChat → Sembunyikan Popup
+           // ------------------------------------
+           window.closeChat = function () {
+             const chatBox = document.getElementById("chat-box");
+             if (!chatBox) return;
+             chatBox.style.display = "none";
+             chatBox.classList.remove("chat-pop");
+           };
+
+
+
+           // ------------------------------------
+           // 2.h. Emoji Picker Setup
+           // ------------------------------------
+           const emojiBtn = document.querySelector('button[title="Emoji"]');
+           const picker   = document.getElementById("emoji-picker");
+           const chatInputElem = document.getElementById("chat-input");
+
+           if (emojiBtn && picker) {
+             emojiBtn.addEventListener("click", () => {
+               picker.style.display = (picker.style.display === "none") ? "block" : "none";
+             });
+           }
+           if (picker && chatInputElem) {
+             picker.addEventListener("emoji-click", event => {
+               chatInputElem.value += event.detail.unicode;
+               chatInputElem.focus();
+               toggleSendButton();
+             });
+             document.addEventListener("click", e => {
+               if (!picker.contains(e.target) && !emojiBtn.contains(e.target)) {
+                 picker.style.display = "none";
+               }
+             });
+           }
+
+           // ------------------------------------
+           // 2.i. GIF Search dengan GIPHY
+           // ------------------------------------
+           const gifBtn         = document.getElementById("gif-toggle-btn");
+           const gifContainer   = document.getElementById("gif-container");
+           const gifSearchInput = document.getElementById("gif-search");
+           const gifResults     = document.getElementById("gif-results");
+           const senderIdGlobal = document.getElementById("sender-id")?.value;
+
+           if (gifBtn && gifContainer) {
+             gifBtn.addEventListener("click", () => {
+               gifContainer.style.display = (gifContainer.style.display === "none") ? "block" : "none";
+             });
+           }
+
+           if (gifSearchInput && gifResults) {
+             gifSearchInput.addEventListener("input", async () => {
+               const query = gifSearchInput.value.trim();
+               if (!query) {
+                 gifResults.innerHTML = "";
+                 return;
+               }
+               try {
+                 const API_KEY = "HST1JijGbqLRqfdi2yT0NN98QIErIZjS";
+                 const response = await fetch(
+                   `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${encodeURIComponent(query)}&limit=10`
+                 );
+                 const data = await response.json();
+                 gifResults.innerHTML = "";
+
+                 data.data.forEach(gif => {
+                   const imgUrl = gif.images.fixed_height.url;
+                   const imgEl  = document.createElement("img");
+                   imgEl.src    = imgUrl;
+                   imgEl.style.cursor = "pointer";
+                   imgEl.classList.add("m-1");
+                   imgEl.width  = 100;
+                   imgEl.height = 100;
+
+                   imgEl.addEventListener("click", () => {
+                     const AES_KEY = "$afitri&D1N1";
+                     const receiverIdElem = document.getElementById("receiver-id");
+                     if (!receiverIdElem) return;
+                     const receiverId = receiverIdElem.value;
+                     if (!receiverId) {
+                       return alert("Pilih dulu teman yang ingin diajak chat!");
+                     }
+
+                     const rawGifMessage       = `<img src="${imgUrl}" alt="gif" class="chat-bubble gif-message">`;
+                     const encryptedGifMessage = CryptoJS.AES.encrypt(rawGifMessage, AES_KEY).toString();
+
+                     socket.emit("send_message", {
+                       sender_id:   senderIdGlobal,
+                       receiver_id: receiverId,
+                       message:     encryptedGifMessage
+                     });
+
+                     // Tutup GIF container
+                     gifContainer.style.display = "none";
+                   });
+
+                   gifResults.appendChild(imgEl);
+                 });
+               } catch (error) {
+                 console.error("❌ Error fetch GIF:", error);
+               }
+             });
+           }
+
+           // ------------------------------------
+           // 2.j. Tombol Like (Emoji “👍”)
+           // ------------------------------------
+           const likeBtnElem = document.getElementById("like-button");
+           if (likeBtnElem) {
+             likeBtnElem.addEventListener("click", () => {
+               const AES_KEY     = "$afitri&D1N1";
+               const senderId    = document.getElementById("sender-id")?.value;
+               const receiverId  = document.getElementById("receiver-id")?.value;
+               if (!senderId || !receiverId) {
+                 return alert("Pilih dulu teman yang ingin diajak chat!");
+               }
+               const likeEmoji     = "👍";
+               const encryptedLike = CryptoJS.AES.encrypt(likeEmoji, AES_KEY).toString();
+
+               socket.emit("send_message", {
+                 sender_id:   senderId,
+                 receiver_id: receiverId,
+                 message:     encryptedLike
+               });
+             });
+           }
+
+           // ------------------------------------
+           // 2.k. Preview Upload Gambar di Chat
+           // ------------------------------------
+           const fileInput = document.getElementById("photo-upload");
+           const previewContainer = document.getElementById("image-preview-container");
+           const previewImage = document.getElementById("image-preview");
+
+           fileInput.addEventListener("change", function () {
+             const file = this.files[0];
+             if (file) {
+               const reader = new FileReader();
+               reader.addEventListener("load", function () {
+                 previewImage.src = reader.result;
+                 previewImage.style.display = "block";
+                 previewContainer.style.display = "flex";
+               });
+               reader.readAsDataURL(file);
+             } else {
+               previewContainer.style.display = "none";
+             }
+           });
+
+           window.removeImage = function () {
+             fileInput.value = "";
+             previewImage.src = "";
+             previewImage.style.display = "none";
+             previewContainer.style.display = "none";
+           };
+
+           // ------------------------------------
+           // 2.l. Penutup DOMContentLoaded
+           // ------------------------------------
+         }); // <-- End of DOMContentLoaded listener
+
+
+
+         // ====================================
+         // 4. Reaction ke Post (outside DOMContentLoaded)
+         // ====================================
+         window.reactToPost = function (postId, reaction) {
+           fetch(`/react/${postId}`, {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ reaction })
+           })
+           .then(res => res.json())
+           .then(data => {
+             if (data.message === "Reaction updated successfully!") {
+               const iconMap = {
+                 like:   "01.png",
+                 love:   "02.png",
+                 happy:  "03.png",
+                 haha:   "04.png",
+                 think:  "05.png",
+                 sad:    "06.png",
+                 lovely: "07.png"
+               };
+               const iconElem = document.querySelector(`#reaction-icon-${postId}`);
+               if (iconElem) {
+                 iconElem.src = `/static/assets/images/icon/${iconMap[reaction]}`;
+               }
+             }
+           })
+           .catch(console.error);
+         };
+         // =========================
+           // 15. Infinite Scroll / Load Post
+           // =========================
+           let currentPage   = {{ current_page|default(1) }};
+           const POSTS_PER_PAGE = {{ posts_per_page|default(5) }};
+           let totalPosts    = {{ total_posts|default(0) }};
+           let loading       = false;
+           let allLoaded     = false;
+
+           function isNearBottom() {
+             const scrollY  = window.scrollY || window.pageYOffset;
+             const vh       = window.innerHeight;
+             const pageH    = document.documentElement.scrollHeight;
+             return scrollY + vh >= pageH - 100;
+           }
+
+           window.addEventListener("scroll", function () {
+             if (allLoaded || loading) return;
+             if (isNearBottom()) {
+               loadMorePosts();
+             }
+           });
+
+           function loadMorePosts() {
+             loading = true;
+             currentPage += 1;
+             $("#loader").show();
+
+             $.ajax({
+               url: "{{ url_for('dashboard') }}",
+               method: "GET",
+               data: {
+                 page: currentPage,
+                 ajax: 1
+               },
+               success: function (response) {
+                 if (!response.trim()) {
+                   allLoaded = true;
+                   $("#loader").hide();
+                   return;
+                 }
+                 $("#post-container").append(response);
+                 loading = false;
+                 $("#loader").hide();
+
+                 const loadedCount = $(".card").length;
+                 if (loadedCount >= totalPosts) {
+                   allLoaded = true;
+                 }
+               },
+               error: function () {
+                 loading = false;
+                 $("#loader").hide();
+               }
+             });
+           }
+
+           // =========================
+           // 16. Tag Teman di Postingan
+           // =========================
+          const friendListEl    = document.getElementById("friendList");
+           const doneButton      = document.getElementById("doneTagging");
+           const hiddenInput     = document.getElementById("tagged_users_input");
+           const taggedDisplay   = document.getElementById("taggedDisplay");
+           const searchInput     = document.getElementById("searchFriendInput");
+           const selectedCon     = document.getElementById("selectedFriendsContainer");
+           const selectedFriends = document.getElementById("selectedFriends");
+
+           // Array untuk men‐yimpan teman yang sudah dipilih { id, name }
+           let taggedFriendsArr = [];
+
+           // 1. Ketika user klik salah satu “Saran”:
+           if (friendListEl) {
+             friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
+               item.addEventListener("click", function () {
+                 const id   = this.getAttribute("data-id");
+                 const name = this.getAttribute("data-name");
+
+                 // Jika belum ada di taggedFriendsArr, tambahkan:
+                 if (!taggedFriendsArr.some(f => f.id === id)) {
+                   taggedFriendsArr.push({ id, name });
+                 }
+                 // Sembunyikan elemen ini dari daftar saran
+                 this.style.display = "none";
+
+                 // Render ulang daftar “Ditandai” di modal
+                 renderTaggedFriends();
+               });
+             });
+           }
+
+           // 2. Fungsi untuk menampilkan “pill” di area Ditandai:
+           function renderTaggedFriends() {
+             // Jika ada teman ter‐tag, tampilkan container:
+             if (taggedFriendsArr.length > 0) {
+               selectedCon.style.display = "block";
+             } else {
+               selectedCon.style.display = "none";
+             }
+             // Kosongkan dulu isian HTML
+             selectedFriends.innerHTML = "";
+
+             taggedFriendsArr.forEach(friend => {
+               const pill = document.createElement("div");
+               pill.classList.add("tag-pill");
+               pill.innerHTML = `
+                 <span>${friend.name}</span>
+                 <span class="remove-tag">&times;</span>
+               `;
+               // Ketika ikon × diklik, hapus tag:
+               pill.querySelector(".remove-tag").addEventListener("click", function () {
+                 // Buang dari array
+                 taggedFriendsArr = taggedFriendsArr.filter(f => f.id !== friend.id);
+                 // Cari kembali item di friendList dan tampilkan
+                 friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
+                   if (item.getAttribute("data-id") === friend.id) {
+                     item.style.display = "";
+                   }
+                 });
+                 renderTaggedFriends();
+               });
+               selectedFriends.appendChild(pill);
+             });
+           }
+
+           // 3. Ketika user klik tombol “Selesai” (id="doneTagging"):
+           if (doneButton && hiddenInput && taggedDisplay) {
+             doneButton.addEventListener("click", function () {
+               // Ambil array ID dan simpan ke hiddenInput dalam bentuk JSON:
+               const ids = taggedFriendsArr.map(f => f.id);
+               hiddenInput.value = JSON.stringify(ids);
+
+               // Siapkan teks “bersama Nama1, Nama2, …”
+               if (taggedFriendsArr.length > 0) {
+                 const names = taggedFriendsArr.map(f => f.name).join(", ");
+                 taggedDisplay.textContent = "bersama " + names;
+                 taggedDisplay.style.display = "inline"; // pastikan tampil di samping nama
+               } else {
+                 taggedDisplay.textContent = "";
+                 taggedDisplay.style.display = "none";
+               }
+               // Modal otomatis tertutup karena data-bs-dismiss="modal"
+             });
+           }
+
+           if (searchInput && friendListEl) {
+             searchInput.addEventListener("input", function () {
+               const filter = this.value.toLowerCase();
+               friendListEl.querySelectorAll(".suggestion-item").forEach(item => {
+                 const name = item.getAttribute("data-name").toLowerCase();
+                 if (name.includes(filter) && item.style.display !== "none") {
+                   item.style.display = "";
+                 } else {
+                   item.style.display = "none";
+                 }
+               });
+             });
+             }
+             document.getElementById('btn-upload').addEventListener('click', function () {
+             document.getElementById('upload-input').click();
+           });
+
+           document.getElementById('upload-input').addEventListener('change', function (e) {
+             const file = e.target.files[0];
+             if (file) {
+               const reader = new FileReader();
+               reader.onload = function (event) {
+                 const preview = document.getElementById('preview-img');
+                 preview.src = event.target.result;
+
+                 document.getElementById('placeholder').style.display = 'block';
+               };
+               reader.readAsDataURL(file);
+             }
+           });
+           document.getElementById('remove-img').addEventListener('click', function () {
+           const input = document.getElementById('upload-input');
+           const preview = document.getElementById('preview-img');
+
+           // Reset input dan preview
+           input.value = '';
+           preview.src = '';
+           document.getElementById('placeholder').style.display = 'none';
+         });
     </script>
   </body>
 </html>

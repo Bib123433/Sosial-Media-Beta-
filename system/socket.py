@@ -2,9 +2,24 @@ from bson import ObjectId
 from flask_socketio import emit, join_room, leave_room
 from flask import request, session
 from system import socketio
+from groq import Groq
+from dotenv import load_dotenv
+import os
+import replicate
+
+
+print("GROQ API KEY:", os.getenv("GROQ_API_KEY"))
 
 online_users = {}
-sid_to_user = {}        # sid -> user_id
+sid_to_user = {}
+load_dotenv()
+BOT_ID = "BibAI"
+ 
+ai_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+replicate_client = replicate.Client(api_token="r8_V9fMr0HmdbiylBgzqZmp5or1h316W5Z3kcCpC")
+
+
+
 
 def init_socket(socketio, mongo):
     users_coll       = mongo.db.user
@@ -63,12 +78,10 @@ def init_socket(socketio, mongo):
 
     @socketio.on("send_message")
     def handle_send_message(data):
-        print("Receive message:", data)  # Log
         sender_id = data.get("sender_id")
         receiver_id = data.get("receiver_id")
         message = data.get("message", "").strip()
         if not message:
-            print("Empty message received. Ignored.")
             return
 
         full_name = online_users.get(sender_id, {}).get("full_name", "Unknown")
@@ -94,6 +107,98 @@ def init_socket(socketio, mongo):
         # Kirim ke penerima dan pengirim
         emit("new_message", message_data, room=receiver_id)
         emit("new_message", message_data, room=sender_id)
+        
+        if receiver_id == BOT_ID:
+            if message.lower().startswith("gambar "):
+                prompt = message[7:].strip()
+
+                try:
+
+                    output = replicate_client.run(
+                        "google/imagen-4",
+                        input={"prompt": prompt}
+                    )
+                    image_url = str(output)
+                    bot_teks = f"Gambar berhasil dibuat untuk:\n{prompt}\n{image_url}"
+
+                except Exception as e:
+                    bot_teks = f"Gagal membuat gambar:\n{str(e)}"
+
+            else:
+                # Jalankan AI teks (Deepseek)
+                ai_resp = ai_client.chat.completions.create(
+                    model="deepseek-r1-distill-llama-70b",
+                    messages=[{"role": "user", "content": message}]
+                )
+                bot_teks = ai_resp.choices[0].message.content.strip()
+
+            # Kirim balasan ke user
+            bot_msg = {
+                "sender_id": BOT_ID,
+                "receiver_id": sender_id,
+                "message": bot_teks,
+                "full_name": "BibAI",
+                "profile_picture": "/static/assets/images/user/05.jpg"
+            }
+            emit("new_message", bot_msg, room=sender_id)
+            
+    @socketio.on('call')
+    def handle_call(data):
+        from_user = data.get('from')
+        to_user = data.get('to')
+        offer = data.get('offer')
+
+        if not from_user or not to_user or not offer:
+            print("❌ Invalid call data:", data)
+            return
+
+        print(f"📞 {from_user} is calling {to_user}")
+
+        sid_target = online_users.get(to_user, {}).get("sid")
+        if sid_target:
+            emit('incoming_call', {
+                'from': from_user,
+                'offer': offer,
+            }, room=sid_target)
+            print(f"✅ Sent incoming_call to {to_user}")
+        else:
+            print(f"⚠️ Target user {to_user} not online or SID not found.")
+
+
+    @socketio.on('answer')
+    def handle_answer(data):
+        to_user = data.get('to')
+        answer = data.get('answer')
+
+        if not to_user or not answer:
+            print("❌ Invalid answer data:", data)
+            return
+
+        sid_target = online_users.get(to_user, {}).get("sid")
+        if sid_target:
+            emit('answer', {'answer': answer}, room=sid_target)
+            print(f"✅ Sent answer to {to_user}")
+        else:
+            print(f"⚠️ Cannot send answer to {to_user} — not connected.")
+
+
+    @socketio.on('ice-candidate')
+    def handle_ice_candidate(data):
+        to_user = data.get('to')
+        candidate = data.get('candidate')
+
+        if not to_user or not candidate:
+            print("❌ Invalid ICE data:", data)
+            return
+
+        sid_target = online_users.get(to_user, {}).get("sid")
+        if sid_target:
+            emit('ice-candidate', {'candidate': candidate}, room=sid_target)
+            print(f"✅ Sent ICE candidate to {to_user}")
+        else:
+            print(f"⚠️ Cannot send ICE candidate to {to_user} — not connected.")
+
+
 
     @socketio.on("disconnect")
     def on_disconnect():

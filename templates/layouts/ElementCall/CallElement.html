@@ -1,0 +1,184 @@
+<div
+  class="top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+  style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    z-index: 1050;
+  "
+  id="callOverlay"
+>
+  <div
+    id="incomingCallBox"
+    class="bg-white rounded shadow p-4 position-relative"
+    style="width: 300px; display: none"
+  >
+    <!-- Tombol close -->
+    <button
+      type="button"
+      class="btn-close position-absolute top-0 end-0 m-3"
+      aria-label="Close"
+      onclick="declineIncoming()"
+    ></button>
+
+    <!-- Header -->
+    <h6 class="text-center mb-3">Telepon Masuk</h6>
+
+    <!-- Avatar -->
+    <div class="d-flex justify-content-center mb-3">
+      <img
+        src="https://i.pinimg.com/736x/7d/6e/89/7d6e89ec606a8ad20b1f06cbff111c44.jpg"
+        class="rounded-circle"
+        width="64"
+        height="64"
+        alt="Avatar"
+      />
+    </div>
+
+    <!-- Nama Penelepon -->
+    <h5 class="fw-bold text-center mb-1" id="callerNameIncoming">
+      <br />Menelpon Anda
+    </h5>
+
+    <!-- Deskripsi -->
+    <p class="text-center text-muted mb-4">
+      Telepon akan dimulai setelah Anda menerimanya
+    </p>
+
+    <!-- Tombol -->
+    <div class="d-flex justify-content-center gap-4">
+      <div class="text-center">
+        <button
+          class="btn btn-danger rounded-circle d-flex justify-content-center align-items-center"
+          style="width: 50px; height: 50px"
+          onclick="declineIncoming()"
+        >
+          <i class="fas fa-times text-white"></i>
+        </button>
+        <div class="small mt-1">Tolak</div>
+      </div>
+      <div class="text-center">
+        <button
+          class="btn btn-success rounded-circle d-flex justify-content-center align-items-center"
+          style="width: 50px; height: 50px"
+          onclick="acceptIncoming()"
+        >
+          <i class="fas fa-video text-white"></i>
+        </button>
+        <div class="small mt-1">Terima</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Call Modal -->
+<div
+  class="modal fade"
+  id="callScreen"
+  tabindex="-1"
+  aria-labelledby="callScreenLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content bg-black text-white">
+      <div
+        class="modal-body d-flex flex-column justify-content-center align-items-center position-relative"
+        style="min-height: 100vh; padding: 16px"
+      >
+        <!-- Notification Top Right -->
+        <div class="position-absolute top-0 end-0 p-3">
+          <div class="notification-box mb-2 d-flex align-items-center">
+            <i class="fas fa-microphone me-3"></i>
+            <div>
+              <p class="mb-0 fw-semibold">Mikrofon terhubung: Microphone</p>
+              <p class="mb-0">(Realtek(R) Audio)</p>
+            </div>
+          </div>
+          <div class="notification-box d-flex align-items-center">
+            <i class="fas fa-volume-up me-3"></i>
+            <div>
+              <p class="mb-0 fw-semibold">Speaker terhubung: Headphones</p>
+              <p class="mb-0">(JQVITEK Classic EP26)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mb-5 w-100">
+          <!-- Avatar Placeholder -->
+          <div
+            id="callingStatus"
+            class="d-flex flex-column justify-content-center align-items-center"
+            style="height: 70vh"
+          >
+            <img
+              src="https://www.w3schools.com/howto/img_avatar.png"
+              class="rounded-circle mb-3"
+              width="120"
+              height="120"
+            />
+            <h4 id="callerNameStatus" class="mb-0">Memanggil...</h4>
+          </div>
+
+          <!-- Center Profile / Video -->
+          <div class="text-center mb-5 w-100">
+            <video
+              id="remoteVideo"
+              autoplay
+              class="w-100 h-auto"
+              style="max-height: 70vh; border-radius: 8px"
+            ></video>
+            <div id="micMutedBadgeRemote" class="mic-muted-badge d-none">
+              <i class="fas fa-microphone-slash"></i>
+            </div>
+          </div>
+
+          <!-- Bottom Controls -->
+          <div
+            id="callControls"
+            class="position-absolute bottom-0 mb-4 d-flex gap-3 d-none"
+          >
+            <button class="control-btn" aria-label="Screen share">
+              <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+            <button class="control-btn" aria-label="Add participant">
+              <i class="fas fa-user-plus"></i>
+            </button>
+            <button
+              class="control-btn"
+              aria-label="Turn off camera"
+              onclick="stopCamera()"
+            >
+              <i class="fas fa-video-slash" id="cameraToggleBtn"></i>
+            </button>
+            <button
+              class="control-btn"
+              aria-label="Mute microphone"
+              onclick="Muted()"
+            >
+              <i id="audioToggleBtn" class="fas fa-microphone-slash"></i>
+            </button>
+            <button
+              class="control-btn end-call"
+              onclick="endCall()"
+              aria-label="End call"
+            >
+              <i class="fas fa-phone"></i>
+            </button>
+          </div>
+
+          <!-- Small Video -->
+          <div class="video-thumb">
+            <video id="localVideo" autoplay muted class="w-100 h-100"></video>
+            <div id="micMutedBadgeLocal" class="mic-muted-badge d-none">
+              <i class="fas fa-microphone-slash"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

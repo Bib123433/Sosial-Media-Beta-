@@ -31,6 +31,10 @@
       rel="stylesheet"
       href="static/assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
 
     <style>
       .upload-option {
@@ -208,6 +212,188 @@
         height: 2.6em; /* kira-kira tinggi 2 baris */
         word-break: break-word; /* biar kata panjang dipotong */
       }
+      .emoji-bubble-sent {
+      font-size: 36px;
+      line-height: 1;
+      padding: 10px;
+      border-radius: 20px;
+      background: transparent;
+      /* atau warna khusus jika mau */
+    }
+
+    .emoji-bubble-received {
+      font-size: 36px;
+      line-height: 1;
+      padding: 10px;
+      border-radius: 20px;
+    }
+
+    /* opsional: kalau mau background ringan */
+    .emoji-bubble-sent {
+      background: rgba(0, 123, 255, 0.1);
+    }
+    #gif-container {
+      width: 260px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #gif-results img:hover {
+      transform: scale(1.05);
+      transition: transform 0.2s;
+    }
+    .chat-bubble.gif-message {
+      max-width: 180px;
+      border-radius: 16px;
+      padding: 4px;
+      background-color: transparent; /* Tidak ada background biru */
+      box-shadow: none;
+      margin-top: 20px;
+    }
+
+    .chat-bubble.gif-message img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      object-fit: cover;
+      display: block;
+    }
+    /* container scroll */
+    .modal-body-scroll {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    /* hide file input */
+    #file-upload {
+      display: none;
+    }
+
+    .btn-overlay {
+      position: absolute;
+      font-size: 0.875rem;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      top: 8px;
+      left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    #loader {
+      display: none;
+    }
+    /* Container untuk semua tag “Ditandai” */
+    #selectedFriendsContainer {
+      border: 1px solid #ddd; /* border tipis abu‐abu */
+      border-radius: 8px; /* sudut sedikit membulat */
+      padding: 8px; /* ruang di dalam kotak */
+      background-color: #fff; /* latar putih */
+      margin-bottom: 16px; /* jarak ke elemen di bawahnya */
+    }
+
+    /* Wrapper tempat tag‐tag ditampilkan */
+    #selectedFriends {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px; /* jarak antar tag */
+    }
+
+    /* Style untuk masing‐masing “pill” (tag) */
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      background-color: #dcf4ff; /* biru pucat (bisa disesuaikan) */
+      color: #055c99; /* teks biru tua agar kontras */
+      border-radius: 12px; /* bentuk oval/membulat */
+      padding: 4px 10px; /* ruang vertikal & horizontal */
+      font-size: 0.9rem;
+      font-weight: 500;
+      /* Box‐shadow tipis (opsional) agar agak terangkat */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Style untuk ikon “×” dalam tag */
+    .tag-pill .remove-tag {
+      margin-left: 6px; /* jarak antara teks nama dan “×” */
+      cursor: pointer;
+      font-weight: bold;
+      color: #055c99; /* sama warna teks tag */
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    /* Saat hover pada teks “×”, warnanya menjadi sedikit lebih gelap */
+    .tag-pill .remove-tag:hover {
+      color: #003e66;
+    }
+
+    /* ----------------------------------- */
+    /* Untuk menyesuaikan tampilan field Cari */
+    /* ----------------------------------- */
+    #searchFriendInput {
+      border-radius: 50px; /* bulat penuh */
+      height: 38px; /* lebih ringkas */
+      font-size: 0.95rem;
+    }
+
+    /* Ganti warna background input cari menjadi abu‐abu muda */
+    #searchFriendInput {
+      background-color: #f1f3f5;
+    }
+
+    /* Placeholder teks menjadi sedikit abu‐abu lebih gelap */
+    #searchFriendInput::placeholder {
+      color: #777;
+    }
+
+    /* ----------------------------------- */
+    /* Styling untuk daftar “Saran” tiap teman */
+    /* ----------------------------------- */
+    #friendList .list-group-item {
+      border: none; /* hilangkan border default */
+      border-bottom: 1px solid #eee; /* border bawah tipis */
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.15s ease-in-out;
+    }
+
+    /* Hapus border bawah untuk item terakhir */
+    #friendList .list-group-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Saat hover pada nama teman di “Saran” */
+    #friendList .list-group-item:hover {
+      background-color: #f8f9fa;
+    }
+    /* Pastikan #notification-drop sudah punya position:relative */
+    #notification-drop {
+      position: relative;
+    }
+
+    /* Atur badge di pojok kanan-atas parent #notification-drop */
+    #notification-drop .badge {
+      display: none; /* awalnya sembunyikan (JS yang nantinya menampilkan) */
+      position: absolute; /* absolute terhadap parent yang relatif */
+      top: 0; /* pojok atas */
+      right: 0; /* pojok kanan */
+      transform: translate(50%, -50%); /* geser sedikit agar “menggantung” */
+      width: 18px; /* ukuran kotak badge */
+      height: 18px; /* ukuran kotak badge */
+      line-height: 18px; /* agar teks vertikal ter-center */
+      font-size: 12px; /* ukuran teks angka */
+      text-align: center; /* rata tengah horizontal */
+      padding: 0; /* padding nol */
+      border-radius: 50%; /* bentuk lingkaran */
+      z-index: 10; /* agar selalu di atas ikon */
+    }
     </style>
   </head>
   <body class="  ">

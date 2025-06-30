@@ -1,0 +1,2088 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <title>Social Media</title>
+      
+      <link rel="shortcut icon" href="static/assets/images/favicon.ico" />
+      <link rel="stylesheet" href="static/assets/css/libs.min.css">
+      <link rel="stylesheet" href="static/assets/css/socialv.css?v=4.0.0">
+      <link rel="stylesheet" href="static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css">
+      <link rel="stylesheet" href="static/assets/vendor/remixicon/fonts/remixicon.css">
+      <link rel="stylesheet" href="static/assets/vendor/vanillajs-datepicker/dist/css/datepicker.min.css">
+      <link rel="stylesheet" href="static/assets/vendor/font-awesome-line-awesome/css/all.min.css">
+      <link rel="stylesheet" href="static/assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+      <link rel="stylesheet" href="static/assets/css/chat.css">
+
+      
+  </head>
+  
+  <body class="  ">
+    <!-- loader Start -->
+    <div id="loading">
+          <div id="loading-center">
+          </div>
+    </div>
+    <!-- loader END -->
+    <!-- Wrapper Start -->
+      {% include "layouts/sidebar.html" %} {% include "layouts/navbar.html" %}
+ 
+      <div class="right-sidebar-mini right-sidebar">
+        <div class="right-sidebar-panel p-0">
+          <div class="card shadow-none">
+            <div class="card-body p-0">
+              <div class="media-height p-3" data-scrollbar="init"></div>
+              <div class="right-sidebar-toggle bg-primary text-white mt-3">
+                <i class="ri-arrow-left-line side-left-icon"></i>
+                <i class="ri-arrow-right-line side-right-icon"
+                  ><span class="ms-3 d-inline-block">Close Menu</span></i
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>               
+   <div id="content-page" class="content-page">
+      <div class="container">
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="card">
+                  <div class="card-body chat-page p-0">
+                     <div class="chat-data-block">
+                        <div class="row">
+                           <div class="col-lg-3 chat-data-left scroller">
+                              <div class="chat-search pt-3 ps-3">
+                                 <div class="d-flex align-items-center">
+                                    <div class="chat-profile me-3">
+                                       <img src="{{ user.profile_picture or url_for('static', filename='assets/images/user/11.png') }}" alt="chat-user" class="avatar-60 ">
+                                    </div>
+                                    <div class="chat-caption">
+                                       <h5 class="mb-0">{{ full_name }}</h5>
+                                       <p class="m-0">{{user.interest}}</p>
+                                    </div>
+                                    <button type="submit" class="close-btn-res p-3"><i class="ri-close-fill"></i></button>
+                                 </div>
+                                 <div id="user-detail-popup" class="scroller">
+                                    <div class="user-profile">
+                                       <button type="submit" class="close-popup p-3"><i class="ri-close-fill"></i></button>
+                                       <div class="user text-center mb-4">
+                                          <a class="avatar m-0">
+                                          <img src="{{ user.profile_picture or url_for('static', filename='assets/images/user/11.png') }}" alt="avatar" style="width: 100px; height: 100px;">
+                                          </a>
+                                          <div class="user-name mt-4">
+                                             <h4 class="text-center">{{ full_name }}</h4>
+                                          </div>
+                                          <div class="user-desc">
+                                             <p class="text-center">{{user.interest}}</p>
+                                          </div>
+                                       </div>
+                                       <hr>
+                                       <div class="user-detail text-left mt-4 ps-4 pe-4">
+                                          <h5 class="mt-4 mb-4">About</h5>
+                                          <p>It is long established fact that a reader will be distracted bt the reddable.</p>
+                                          <h5 class="mt-3 mb-3">Status</h5>
+                                          <ul class="user-status p-0">
+                                             <li class="mb-1"><i class="ri-checkbox-blank-circle-fill text-success pe-1"></i><span>Online</span></li>
+                                             <li class="mb-1"><i class="ri-checkbox-blank-circle-fill text-warning pe-1"></i><span>Away</span></li>
+                                             <li class="mb-1"><i class="ri-checkbox-blank-circle-fill text-danger pe-1"></i><span>Do Not Disturb</span></li>
+                                             <li class="mb-1"><i class="ri-checkbox-blank-circle-fill text-light pe-1"></i><span>Offline</span></li>
+                                          </ul>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 <div class="chat-searchbar mt-4">
+                                    <div class="form-group chat-search-data m-0">
+                                       <input type="text" class="form-control round" id="chat-search" placeholder="Search">
+                                       <i class="ri-search-line"></i>
+                                    </div>
+                                 </div>
+                              </div>
+                              
+                              <div class="chat-sidebar-channel scroller mt-4 ps-3">
+                                 
+                                 <h5 class="" style="margin-top:10px;">Public Channels</h5>
+                                 <ul class="iq-chat-ui nav flex-column nav-pills">
+                                    <li>
+                                       <a data-bs-toggle="pill" href="#chatbox1">
+                                          <div class="d-flex align-items-center">
+                                             <div class="avatar me-2">
+                                                <img src="static/assets/images/user/05.jpg" alt="chatuserimage" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill"></i></span>
+                                             </div>
+                                             <div class="chat-sidebar-name">
+                                                <h6 class="mb-0">BibAI</h6>
+                                                <span>Chat dengan AI</span>
+                                             </div>
+                                             <div class="chat-meta float-right text-center mt-2 me-1">
+                                                <div class="chat-msg-counter bg-primary text-white">20</div>
+                                                <span class="text-nowrap">05 min</span>
+                                             </div>
+                                          </div>
+                                       </a>
+                                    </li>
+                                    <li>
+                                       <a data-bs-toggle="pill" href="#chatbox2">
+                                          <div class="d-flex align-items-center">
+                                             <div class="avatar me-2">
+                                                <img src="static/assets/images/user/06.jpg" alt="chatuserimage" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-success"></i></span>
+                                             </div>
+                                             <div class="chat-sidebar-name">
+                                                <h6 class="mb-0">Announcement</h6>
+                                                <span>This Sunday we</span>
+                                             </div>
+                                             <div class="chat-meta float-right text-center mt-2 me-1">
+                                                <div class="chat-msg-counter bg-primary text-white">10</div>
+                                                <span class="text-nowrap">10 min</span>
+                                             </div>
+                                          </div>
+                                       </a>
+                                    </li>
+                                 </ul>
+                                 <h5 class="mt-3">Private Channels</h5>
+                                 <ul class="iq-chat-ui nav flex-column nav-pills">
+                                    <li>
+                                       <a data-bs-toggle="pill" href="#chatbox3">
+                                          <div class="d-flex align-items-center">
+                                             <div class="avatar me-2">
+                                                <img src="static/assets/images/user/07.jpg" alt="chatuserimage" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-warning"></i></span>
+                                             </div>
+                                             <div class="chat-sidebar-name">
+                                                <h6 class="mb-0">Designer</h6>
+                                                <span>There are many </span>
+                                             </div>
+                                          </div>
+                                       </a>
+                                    </li>
+                                    <li>
+                                       <a  data-bs-toggle="pill" href="#chatbox4">
+                                          <div class="d-flex align-items-center">
+                                             <div class="avatar me-2">
+                                                <img src="static/assets/images/user/08.jpg" alt="chatuserimage" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-success"></i></span>
+                                             </div>
+                                             <div class="chat-sidebar-name">
+                                                <h6 class="mb-0">Developer</h6>
+                                                <span>passages of Lorem</span>
+                                             </div>
+                                          </div>
+                                       </a>
+                                    </li>
+                                    <li>
+                                       <a  data-bs-toggle="pill" href="#chatbox5">
+                                          <div class="d-flex align-items-center">
+                                             <div class="avatar me-2">
+                                                <img src="static/assets/images/user/09.jpg" alt="chatuserimage" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-info"></i></span>
+                                             </div>
+                                             <div class="chat-sidebar-name">
+                                                <h6 class="mb-0">Testing Team</h6>
+                                                <span>Lorem Ipsum used</span>
+                                             </div>
+                                          </div>
+                                       </a>
+                                    </li>
+                                 </ul>
+                                 <h5 class="mt-3">Direct Message</h5>
+                                 <ul id="dm-list" class="iq-chat-ui nav flex-column nav-pills">
+                                   <li>
+                                    <a
+                                       class="nav-link"
+                                       id="tab-chatbox6"
+                                       data-bs-toggle="pill"
+                                       href="#chatbox6"
+                                       role="tab"
+                                       aria-controls="chatbox6"
+                                       aria-selected="false">
+                                       
+                                    </a>
+                                    </li>
+                                    
+                                 </ul>
+                              </div>
+                           </div>
+                           <div class="col-lg-9 chat-data p-0 chat-data-right">
+                              <div class="tab-content">
+                                 <div class="tab-pane fade active show" id="default-block" role="tabpanel">
+                                    <div class="chat-start">
+                                       <span class="iq-start-icon text-primary"><i class="ri-message-3-line"></i></span>
+                                       <button id="chat-start" class="btn bg-white mt-3">Start
+                                       Conversation!</button>
+                                    </div>
+                                 </div>
+                                {% include "layouts/ElementCall/CallElement.html"%}
+
+                                 <div class="tab-pane fade" id="chatbox1" role="tabpanel">
+                                    <div class="chat-head">
+                                       <header class="d-flex justify-content-between align-items-center bg-white pt-3 pe-3 pb-3">
+                                          <div class="d-flex align-items-center">
+                                             <div class="sidebar-toggle">
+                                                <i class="ri-menu-3-line"></i>
+                                             </div>
+                                             <div class="avatar chat-user-profile m-0 me-3">
+                                                <img src="static/assets/images/user/05.jpg" alt="avatar" class="avatar-50 ">
+                                             </div>
+                                             <h5 class="mb-0">BibAI</h5>
+                                          </div>
+                                          <div class="chat-user-detail-popup scroller">
+                                             <div class="user-profile">
+                                                <button type="submit" class="close-popup p-3"><i class="ri-close-fill"></i></button>
+                                                <div class="user mb-4  text-center">
+                                                   <a class="avatar m-0">
+                                                   <img src="static/assets/images/user/05.jpg" alt="avatar">
+                                                   </a>
+                                                   <div class="user-name mt-4">
+                                                      <h4>BibAI</h4>
+                                                   </div>
+                                                   <div class="user-desc">
+                                                      <p>Cape Town, RSA</p>
+                                                   </div>
+                                                </div>
+                                                <hr>
+                                                
+                                             </div>
+                                          </div>
+                                         
+                                       </header>
+                                    </div>
+                                    <div class="chat-content scroller">
+                                       {% for chat in chat_logs %}
+                                       <!-- Pesan dari user -->
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                                <img src="{{ url_for('static', filename='assets/images/user/1.jpg') }}" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">{{ chat.timestamp.strftime('%H:%M') }}</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message"><p>{{ chat.message }}</p></div>
+                                          </div>
+                                       </div>
+
+                                       <!-- Balasan dari AI -->
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                                <img src="{{ url_for('static', filename='assets/images/user/05.jpg') }}" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">{{ chat.timestamp.strftime('%H:%M') }}</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message"><p>{{ chat.reply | replace('<think>', '') | replace('</think>', '') }}</p></div>
+                                          </div>
+                                       </div>
+                                       {% endfor %}
+                                    </div>
+
+                                    <div class="chat-footer p-3 bg-white">
+                                       <form class="d-flex align-items-center"  onsubmit="sendMessageAI(event)">
+                                          <div class="chat-attagement d-flex">
+                                             <a href="#"><i class="far fa-smile pe-3" aria-hidden="true"></i></a>
+                                             <a href="#"><i class="fa fa-paperclip pe-3" aria-hidden="true"></i></a>
+                                          </div>
+                                          <input type="text" class="form-control me-3" id="chat-input-main" placeholder="Type your message">
+                                          <button type="submit" class="btn btn-primary d-flex align-items-center px-2" id="send-btn">
+                                             <i class="far fa-paper-plane" aria-hidden="true"></i><span class="d-none d-lg-block ms-1">Send</span>
+                                          </button>
+                                       </form>
+                                    </div>
+                                 </div>
+
+                                 <div class="tab-pane fade" id="chatbox2" role="tabpanel">
+                                    <div class="chat-head">
+                                       <header class="d-flex justify-content-between align-items-center bg-white pt-3  ps-3 pe-3 pb-3">
+                                          <div class="d-flex align-items-center">
+                                             <div class="sidebar-toggle">
+                                                <i class="ri-menu-3-line"></i>
+                                             </div>
+                                             <div class="avatar chat-user-profile m-0 me-3">
+                                                <img src="static/assets/images/user/06.jpg" alt="avatar" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-success"></i></span>
+                                             </div>
+                                             <h5 class="mb-0">Announcement</h5>
+                                          </div>
+                                          <div class="chat-user-detail-popup scroller" >
+                                             <div class="user-profile">
+                                                <button type="submit" class="close-popup p-3"><i class="ri-close-fill"></i></button>
+                                                <div class="user mb-4 text-center">
+                                                   <a class="avatar m-0">
+                                                   <img src="static/assets/images/user/06.jpg" alt="avatar">
+                                                   </a>
+                                                   <div class="user-name mt-4">
+                                                      <h4>Mark Jordan</h4>
+                                                   </div>
+                                                   <div class="user-desc">
+                                                      <p>Atlanta, USA</p>
+                                                   </div>
+                                                </div>
+                                                <hr>
+                                                <div class="chatuser-detail text-left mt-4">
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Bni Name:</div>
+                                                      <div class="col-6 col-md-6 text-right">Mark</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Tel:</div>
+                                                      <div class="col-6 col-md-6 text-right">072 143 9920</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Date Of Birth:</div>
+                                                      <div class="col-6 col-md-6 text-right">July 12, 1989</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Gender:</div>
+                                                      <div class="col-6 col-md-6 text-right">Female</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Language:</div>
+                                                      <div class="col-6 col-md-6 text-right">Engliah</div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                          <div class="chat-header-icons d-flex">
+                                             <a href="#" class="chat-icon-phone bg-soft-primary">
+                                             <i class="ri-phone-line"></i>
+                                             </a>
+                                             <button id="callBtn" onclick="startCall()" class="chat-icon-video bg-soft-primary">
+                                             <i class="ri-vidicon-line"></i>
+                                             </button>
+                                             <a href="#" class="chat-icon-delete bg-soft-primary">
+                                             <i class="ri-delete-bin-line"></i>
+                                             </a>
+                                             <span class="dropdown bg-soft-primary">
+                                             <i class="ri-more-2-line cursor-pointer dropdown-bs-toggle nav-hide-arrow cursor-pointer" id="dropdownMenuButton01" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menu"></i>
+                                             <span class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton01">
+                                                <a class="dropdown-item" href="#"><i class="ri-pushpin-2-line me-1 h5"></i>Pin to top</a>
+                                                <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-line me-1 h5"></i>Delete chat</a>
+                                                <a class="dropdown-item" href="#"><i class="ri-time-line me-1 h5"></i>Block</a>
+                                             </span>
+                                             </span>
+                                          </div>
+                                       </header>
+                                    </div>
+                                    <div class="chat-content scroller">
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:45</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>How can we help? We're here for you! 😄</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/06.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:48</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Hey John, I am looking for the best admin template.</p>
+                                                <p>Could you please help me to find it out? 🤔</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:49</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Absolutely!</p>
+                                                <p>SocialV Dashboard is the responsive bootstrap 4 admin template.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/06.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:52</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Looks clean and fresh UI.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:53</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Thanks, from ThemeForest.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/06.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:54</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>I will purchase it for sure. 👍</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:56</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Okay Thanks..</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="chat-footer p-3 bg-white">
+                                       <form class="d-flex align-items-center"  action="#">
+                                          <div class="chat-attagement d-flex">
+                                             <a href="#"><i class="far fa-smile pe-3" aria-hidden="true"></i></a>
+                                             <a href="#"><i class="fa fa-paperclip pe-3" aria-hidden="true"></i></a>
+                                          </div>
+                                          <input type="text" class="form-control me-3" placeholder="Type your message">
+                                          <button type="submit" class="btn btn-primary d-flex align-items-center p-2"><i class="far fa-paper-plane" aria-hidden="true"></i><span class="d-none d-lg-block ms-1">Send</span></button>
+                                       </form>
+                                    </div>
+                                 </div>
+                                 <div class="tab-pane fade" id="chatbox3" role="tabpanel">
+                                    <div class="chat-head">
+                                       <header class="d-flex justify-content-between align-items-center bg-white pt-3 ps-3 pe-3 pb-3">
+                                          <div class="d-flex align-items-center">
+                                             <div class="sidebar-toggle">
+                                                <i class="ri-menu-3-line"></i>
+                                             </div>
+                                             <div class="avatar chat-user-profile m-0 me-3">
+                                                <img src="static/assets/images/user/07.jpg" alt="avatar" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-success"></i></span>
+                                             </div>
+                                             <h5 class="mb-0">Designer</h5>
+                                          </div>
+                                          <div class="chat-user-detail-popup scroller">
+                                             <div class="user-profile ">
+                                                <button type="submit" class="close-popup p-3"><i class="ri-close-fill"></i></button>
+                                                <div class="user text-center mb-4">
+                                                   <a class="avatar m-0">
+                                                   <img src="static/assets/images/user/07.jpg" alt="avatar">
+                                                   </a>
+                                                   <div class="user-name mt-4">
+                                                      <h4>Paige Turner</h4>
+                                                   </div>
+                                                   <div class="user-desc">
+                                                      <p>Cape Town, RSA</p>
+                                                   </div>
+                                                </div>
+                                                <hr>
+                                                <div class="chatuser-detail text-left mt-4">
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Bni Name:</div>
+                                                      <div class="col-6 col-md-6 text-right">pai</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Tel:</div>
+                                                      <div class="col-6 col-md-6 text-right">072 143 9920</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Date Of Birth:</div>
+                                                      <div class="col-6 col-md-6 text-right">July 12, 1989</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Gender:</div>
+                                                      <div class="col-6 col-md-6 text-right">Male</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Language:</div>
+                                                      <div class="col-6 col-md-6 text-right">Engliah</div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                          <div class="chat-header-icons d-flex ">
+                                             <a href="#" class="chat-icon-phone bg-soft-primary">
+                                             <i class="ri-phone-line"></i>
+                                             </a>
+                                             <a href="#" class="chat-icon-video bg-soft-primary">
+                                             <i class="ri-vidicon-line"></i>
+                                             </a>
+                                             <a href="#" class="chat-icon-delete bg-soft-primary">
+                                             <i class="ri-delete-bin-line"></i>
+                                             </a>
+                                             <span class="dropdown bg-soft-primary">
+                                                <i class="ri-more-2-line cursor-pointer dropdown-toggle nav-hide-arrow cursor-pointer" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menu"></i>
+                                                <span class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton1">
+                                                   <a class="dropdown-item" href="#"><i class="ri-pushpin-2-line me-1 h5"></i>Pin to top</a>
+                                                   <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-line me-1 h5"></i>Delete chat</a>
+                                                   <a class="dropdown-item" href="#"><i class="ri-time-line me-1 h5"></i>Block</a>
+                                                </span>
+                                             </span>
+                                          </div>
+                                       </header>
+                                    </div>
+                                    <div class="chat-content scroller">
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:45</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>How can we help? We're here for you! 😄</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/07.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:48</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Hey John, I am looking for the best admin template.</p>
+                                                <p>Could you please help me to find it out? 🤔</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:49</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Absolutely!</p>
+                                                <p>SocialV Dashboard is the responsive bootstrap 4 admin template.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/07.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:52</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Looks clean and fresh UI.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:53</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Thanks, from ThemeForest.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/07.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:54</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>I will purchase it for sure. 👍</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:56</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Okay Thanks..</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="chat-footer p-3 bg-white">
+                                       <form class="d-flex align-items-center"  action="#">
+                                          <div class="chat-attagement d-flex">
+                                             <a href="#"><i class="far fa-smile pe-3" aria-hidden="true"></i></a>
+                                             <a href="#"><i class="fa fa-paperclip pe-3" aria-hidden="true"></i></a>
+                                          </div>
+                                          <input type="text" class="form-control me-3" placeholder="Type your message">
+                                          <button type="submit" class="btn btn-primary d-flex align-items-center p-2"><i class="far fa-paper-plane" aria-hidden="true"></i><span class="d-none d-lg-block ms-1">Send</span></button>
+                                       </form>
+                                    </div>
+                                 </div>
+                                 <div class="tab-pane fade" id="chatbox4" role="tabpanel">
+                                    <div class="chat-head">
+                                       <header class="d-flex justify-content-between align-items-center bg-white pt-3 ps-3 pe-3 pb-3">
+                                          <div class="d-flex align-items-center">
+                                             <div class="sidebar-toggle">
+                                                <i class="ri-menu-3-line"></i>
+                                             </div>
+                                             <div class="avatar chat-user-profile m-0 me-3">
+                                                <img src="static/assets/images/user/08.jpg" alt="avatar" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-success"></i></span>
+                                             </div>
+                                             <h5 class="mb-0">Developer</h5>
+                                          </div>
+                                          <div class="chat-user-detail-popup scroller">
+                                             <div class="user-profile ">
+                                                <button type="submit" class="close-popup p-3"><i class="ri-close-fill"></i></button>
+                                                <div class="user mb-4 text-center">
+                                                   <a class="avatar m-0">
+                                                   <img src="static/assets/images/user/08.jpg" alt="avatar">
+                                                   </a>
+                                                   <div class="user-name mt-4">
+                                                      <h4>Barb Ackue</h4>
+                                                   </div>
+                                                   <div class="user-desc">
+                                                      <p>Cape Town, RSA</p>
+                                                   </div>
+                                                </div>
+                                                <hr>
+                                                <div class="chatuser-detail text-left mt-4">
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Bni Name:</div>
+                                                      <div class="col-6 col-md-6 text-right">Babe</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Tel:</div>
+                                                      <div class="col-6 col-md-6 text-right">072 143 9920</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Date Of Birth:</div>
+                                                      <div class="col-6 col-md-6 text-right">July 12, 1989</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Gender:</div>
+                                                      <div class="col-6 col-md-6 text-right">Feale</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Language:</div>
+                                                      <div class="col-6 col-md-6 text-right">Engliah</div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                          <div class="chat-header-icons d-flex">
+                                             <a href="#" class="chat-icon-phone bg-soft-primary">
+                                             <i class="ri-phone-line"></i>
+                                             </a>
+                                             <a href="#" class="chat-icon-video bg-soft-primary">
+                                             <i class="ri-vidicon-line"></i>
+                                             </a>
+                                             <a href="#" class="chat-icon-delete bg-soft-primary">
+                                             <i class="ri-delete-bin-line"></i>
+                                             </a>
+                                             <span class="dropdown bg-soft-primary">
+                                             <i class="ri-more-2-line cursor-pointer dropdown-toggle nav-hide-arrow cursor-pointer" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menu"></i>
+                                                <span class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton2">
+                                                   <a class="dropdown-item" href="#"><i class="ri-pushpin-2-line me-1 h5"></i>Pin to top</a>
+                                                   <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-line me-1 h5"></i>Delete chat</a>
+                                                   <a class="dropdown-item" href="#"><i class="ri-time-line me-1 h5"></i>Block</a>
+                                                </span>
+                                             </span>
+                                          </div>
+                                       </header>
+                                    </div>
+                                    <div class="chat-content scroller">
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:45</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>How can we help? We're here for you! 😄</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/08.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:48</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Hey John, I am looking for the best admin template.</p>
+                                                <p>Could you please help me to find it out? 🤔</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:49</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Absolutely!</p>
+                                                <p>SocialV Dashboard is the responsive bootstrap 4 admin template.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/08.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:52</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Looks clean and fresh UI.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:53</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Thanks, from ThemeForest.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/08.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:54</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>I will purchase it for sure. 👍</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:56</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Okay Thanks..</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="chat-footer p-3 bg-white">
+                                       <form class="d-flex align-items-center"  action="#">
+                                          <div class="chat-attagement d-flex">
+                                             <a href="#"><i class="far fa-smile pe-3" aria-hidden="true"></i></a>
+                                             <a href="#"><i class="fa fa-paperclip pe-3" aria-hidden="true"></i></a>
+                                          </div>
+                                          <input type="text" class="form-control me-3" placeholder="Type your message">
+                                          <button type="submit" class="btn btn-primary d-flex align-items-center p-2"><i class="far fa-paper-plane" aria-hidden="true"></i><span class="d-none d-lg-block ms-1">Send</span></button>
+                                       </form>
+                                    </div>
+                                 </div>
+                                 <div class="tab-pane fade" id="chatbox5" role="tabpanel">
+                                    <div class="chat-head">
+                                       <header class="d-flex justify-content-between align-items-center bg-white pt-3 ps-3 pe-3 pb-3">
+                                          <div class="d-flex align-items-center">
+                                             <div class="sidebar-toggle">
+                                                <i class="ri-menu-3-line"></i>
+                                             </div>
+                                             <div class="avatar chat-user-profile m-0 me-3">
+                                                <img src="static/assets/images/user/09.jpg" alt="avatar" class="avatar-50 ">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill text-success"></i></span>
+                                             </div>
+                                             <h5 class="mb-0">Testing Team</h5>
+                                          </div>
+                                          <div class="chat-user-detail-popup scroller">
+                                             <div class="user-profile ">
+                                                <button type="submit" class="close-popup p-3"><i class="ri-close-fill"></i></button>
+                                                <div class="user mb-4 text-center">
+                                                   <a class="avatar m-0">
+                                                   <img src="static/assets/images/user/09.jpg" alt="avatar">
+                                                   </a>
+                                                   <div class="user-name mt-4">
+                                                      <h4>Peta Saireya</h4>
+                                                   </div>
+                                                   <div class="user-desc">
+                                                      <p>Cape Town, RSA</p>
+                                                   </div>
+                                                </div>
+                                                <hr>
+                                                <div class="chatuser-detail text-left mt-4">
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Bni Name:</div>
+                                                      <div class="col-6 col-md-6 text-right">Pet</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Tel:</div>
+                                                      <div class="col-6 col-md-6 text-right">072 143 9920</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Date Of Birth:</div>
+                                                      <div class="col-6 col-md-6 text-right">July 12, 1989</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Gender:</div>
+                                                      <div class="col-6 col-md-6 text-right">Female</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Language:</div>
+                                                      <div class="col-6 col-md-6 text-right">Engliah</div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                          <div class="chat-header-icons d-flex">
+                                             <a href="#" class="chat-icon-phone bg-soft-primary">
+                                             <i class="ri-phone-line"></i>
+                                             </a>
+                                             <a href="#" class="chat-icon-video bg-soft-primary">
+                                             <i class="ri-vidicon-line"></i>
+                                             </a>
+                                             <a href="#" class="chat-icon-delete bg-soft-primary">
+                                             <i class="ri-delete-bin-line"></i>
+                                             </a>
+                                             <span class="dropdown bg-soft-primary">
+                                             <i class="ri-more-2-line cursor-pointer dropdown-toggle nav-hide-arrow cursor-pointer" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menu"></i>
+                                             <span class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton3">
+                                                   <a class="dropdown-item" href="#"><i class="ri-pushpin-2-line me-1 h5"></i>Pin to top</a>
+                                                   <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-line me-1 h5"></i>Delete chat</a>
+                                                   <a class="dropdown-item" href="#"><i class="ri-time-line me-1 h5"></i>Block</a>
+                                             </span>
+                                             </span>
+                                          </div>
+                                       </header>
+                                    </div>
+                                    <div class="chat-content scroller">
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:45</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>How can we help? We're here for you! 😄</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/09.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:48</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Hey John, I am looking for the best admin template.</p>
+                                                <p>Could you please help me to find it out? 🤔</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:49</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Absolutely!</p>
+                                                <p>SocialV Dashboard is the responsive bootstrap 4 admin template.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/09.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:52</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Looks clean and fresh UI.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:53</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Thanks, from ThemeForest.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat chat-left">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/09.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:54</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>I will purchase it for sure. 👍</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="chat d-flex other-user">
+                                          <div class="chat-user">
+                                             <a class="avatar m-0">
+                                             <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                                             </a>
+                                             <span class="chat-time mt-1">6:56</span>
+                                          </div>
+                                          <div class="chat-detail">
+                                             <div class="chat-message">
+                                                <p>Okay Thanks..</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="chat-footer p-3 bg-white">
+                                       <form class="d-flex align-items-center"  action="#">
+                                          <div class="chat-attagement d-flex">
+                                             <a href="#"><i class="far fa-smile pe-3" aria-hidden="true"></i></a>
+                                             <a href="#"><i class="fa fa-paperclip pe-3" aria-hidden="true"></i></a>
+                                          </div>
+                                          <input type="text" class="form-control me-3" placeholder="Type your message">
+                                          <button type="submit" class="btn btn-primary d-flex align-items-center p-2"><i class="far fa-paper-plane" aria-hidden="true"></i><span class="d-none d-lg-block ms-1">Send</span></button>
+                                       </form>
+                                    </div>
+                                 </div>
+                                 <div id="chatbox6" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-chatbox6">
+                                    <div class="chat-head">
+                                       <header class="d-flex justify-content-between align-items-center bg-white pt-3 ps-3 pe-3 pb-3">
+                                          <div class="d-flex align-items-center">
+                                             <div class="sidebar-toggle">
+                                                <i class="ri-menu-3-line"></i>
+                                             </div>
+                                             <div class="avatar chat-user-profile m-0 me-3">
+                                                <img src="" alt="avatar" class="avatar-50 " id="pane-profile-pic">
+                                                <span class="avatar-status"><i class="ri-checkbox-blank-circle-fill"></i></span>
+                                             </div>
+                                             <h5 class="mb-0" id="pane-profile-name"></h5>
+                                          </div>
+                                          <div class="chat-user-detail-popup scroller">
+                                             <div class="user-profile ">
+                                                <button type="submit" class="close-popup p-3"><i class="ri-close-fill"></i></button>
+                                                <div class="user mb-4 text-center">
+                                                   <a class="avatar m-0">
+                                                   <img src="static/assets/images/user/10.jpg" alt="avatar">
+                                                   </a>
+                                                   <div class="user-name mt-4">
+                                                      <h4>{{ user.full_name }}</h4>
+                                                   </div>
+                                                   <div class="user-desc">
+                                                      <p>Cape Town, RSA</p>
+                                                   </div>
+                                                </div>
+                                                <hr>
+                                                <div class="chatuser-detail text-left mt-4">
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Bni Name:</div>
+                                                      <div class="col-6 col-md-6 text-right">Pau</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Tel:</div>
+                                                      <div class="col-6 col-md-6 text-right">072 143 9920</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Date Of Birth:</div>
+                                                      <div class="col-6 col-md-6 text-right">July 12, 1989</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Gender:</div>
+                                                      <div class="col-6 col-md-6 text-right">Male</div>
+                                                   </div>
+                                                   <hr>
+                                                   <div class="row">
+                                                      <div class="col-6 col-md-6 title">Language:</div>
+                                                      <div class="col-6 col-md-6 text-right">Engliah</div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                          <div class="chat-header-icons d-flex">
+                                             <a href="#" class="chat-icon-phone bg-soft-primary">
+                                                <i class="ri-phone-line"></i>
+                                             </a>
+                                             <a href="#" id="callBtn" onclick="startCall()" class="chat-icon-video bg-soft-primary">
+                                                <i class="ri-vidicon-line"></i>
+                                             </a>
+                                             <a href="#" class="chat-icon-delete bg-soft-primary">
+                                                <i class="ri-delete-bin-line"></i>
+                                             </a>
+                                             <span class="dropdown bg-soft-primary">
+                                                <i class="ri-more-2-line cursor-pointer dropdown-toggle nav-hide-arrow cursor-pointer" id="dropdownMenuButton4" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="menu"></i>
+                                                <span class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton4">
+                                                      <a class="dropdown-item" href="#"><i class="ri-pushpin-2-line me-1 h5"></i>Pin to top</a>
+                                                      <a class="dropdown-item" href="#"><i class="ri-delete-bin-6-line me-1 h5"></i>Delete chat</a>
+                                                      <a class="dropdown-item" href="#"><i class="ri-time-line me-1 h5"></i>Block</a>
+                                                </span>
+                                             </span>
+                                          </div>
+
+                                       </header>
+                                    </div>
+                                    <div class="chat-content scroller">
+                                   
+                                    </div>
+
+                                    <input type="hidden" id="receiver-id" value="{{ user._id }}" />
+                                    <input
+                                    type="hidden"
+                                    id="sender-id"
+                                    value="{{ session.get('user_id') }}"
+                                    />
+                                    <img id="sender-pic" src="{{ user.profile_picture }}" hidden>
+                                    
+                                    <div class="chat-footer p-3 bg-white">
+                                       <form class="d-flex align-items-center"  action="#" >
+                                          <div class="chat-attagement d-flex">
+                                             <button id="emoji-btn1" class="btn p-0 me-1" title="Emoji">
+                                                <i id="emoji-icon1"class="far fa-smile fa-lg pe-3 text-secondary"></i>
+                                             </button>
+                                                <!-- di dalam #chat-box -->
+                                                <emoji-picker
+                                                id="emoji-picker1"
+                                                style="
+                                                   position: absolute;
+                                                   bottom: 60px;
+                                                   left: 20px;
+                                                   display: none;
+                                                   z-index: 2000;
+                                                "
+                                                ></emoji-picker>
+
+                                             
+                                          </div>
+                                          <input type="text" class="form-control me-3" placeholder="Type your message" id="chat-input1" oninput="toggleSendButton1()">
+                                          <button type="button" id="sendBtn" class="btn btn-primary d-flex align-items-center p-2 d-none"><i class="far fa-paper-plane" aria-hidden="true"></i></button>
+                                           <button
+                                             id="likeBtn"
+                                             class="btn btn-link text-primary p-0"
+                                             title="Like"
+                                             >
+                                             <i class="fas fa-thumbs-up fa-lg"></i>
+                                             </button>
+                                       </form>
+                                    </div>
+                                 </div>
+
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            
+         </div>
+      </div>
+      </div>
+   </div>
+    {% include "layouts/footer.html"%} {% include "layouts/chat/chatbox.html"%}
+    <script>
+      window.CURRENT_USER_ID = "{{ session.get('user_id') }}";
+      function sendMessageAI(event){
+         event.preventDefault();
+
+         const input = document.getElementById('chat-input-main');
+         const message = input.value;
+         if(!message.trim()) return;
+
+            document.querySelector('.chat-content').insertAdjacentHTML('beforeend', `
+            <div class="chat d-flex other-user">
+                  <div class="chat-user">
+                     <a class="avatar m-0">
+                        <img src="static/assets/images/user/1.jpg" alt="avatar" class="avatar-35 ">
+                     </a>
+                     <span class="chat-time mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+                  <div class="chat-detail">
+                     <div class="chat-message"><p>${message}</p></div>
+                  </div>
+            </div>
+         `);
+
+         input.value = "";
+
+         fetch("/chat",{
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ message: message })
+         })
+         .then(res => res.json())
+         .then(data => {
+        const reply = data.reply;
+        document.querySelector('.chat-content').insertAdjacentHTML('beforeend', `
+            <div class="chat chat-left">
+                <div class="chat-user">
+                    <a class="avatar m-0">
+                        <img src="static/assets/images/user/05.jpg" alt="avatar" class="avatar-35 ">
+                    </a>
+                    <span class="chat-time mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                <div class="chat-detail">
+                    <div class="chat-message"><p>${reply}</p></div>
+                </div>
+            </div>
+        `);
+       });
+      }
+      function showIncoming(fromUser) {
+         document.getElementById('callerName').textContent = fromUser + ' menelpon Anda';
+         document.getElementById('callOverlay').style.display = 'block';
+         document.getElementById('incomingCallBox').style.display = 'block';
+      }
+      function declineIncoming() {
+         document.getElementById('callOverlay').style.display = 'none';
+         document.getElementById('incomingCallBox').style.display = 'none';
+      }
+      function acceptIncoming() {
+         declineIncoming();
+         // trigger JS flow yang sudah ada di script.js untuk menjawab
+         confirmAccept(); // contoh panggil fungsi confirm di script.js
+      }
+
+      let socket;
+
+      // ====================================
+      // 1. Toggle Send/Like Button (global)
+      // ====================================
+      function toggleSendButton() {
+        const input   = document.getElementById("chat-input");
+        const likeBtn = document.getElementById("like-button");
+        const sendBtn = document.getElementById("send-button");
+        if (!input || !likeBtn || !sendBtn) return;
+
+        if (input.value.trim()) {
+          likeBtn.classList.add("d-none");
+          sendBtn.classList.remove("d-none");
+        } else {
+          likeBtn.classList.remove("d-none");
+          sendBtn.classList.add("d-none");
+        }
+      }
+
+      function toggleSendButton1() {
+        const input1   = document.getElementById("chat-input1");
+        const likeBtn1 = document.getElementById("likeBtn");
+        const sendBtn1 = document.getElementById("sendBtn");
+        if (!input1 || !likeBtn1 || !sendBtn1) return;
+
+        if (input1.value.trim()) {
+          likeBtn1.classList.add("d-none");
+          sendBtn1.classList.remove("d-none");
+        } else {
+          likeBtn1.classList.remove("d-none");
+          sendBtn1.classList.add("d-none");
+        }
+      }
+
+      // =========================
+        // 6. Kirim Pesan
+        // =========================
+        function sendMessage() {
+          const AES_KEY      = "$afitri&D1N1";
+          const senderIdElem = document.getElementById("sender-id");
+          const receiverElem = document.getElementById("receiver-id");
+          const inputElem    = document.getElementById("chat-input");
+
+          if (!senderIdElem || !receiverElem || !inputElem) return;
+
+          const senderId   = senderIdElem.value;
+          const receiverId = receiverElem.value;
+          const rawMessage = inputElem.value.trim();
+          if (!rawMessage) return;
+
+          const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
+          socket.emit("send_message", {
+            sender_id:   senderId,
+            receiver_id: receiverId,
+            message:     encryptedMessage
+          });
+
+          const chatBody = document.querySelector("#chat-box .flex-grow-1");
+          if (chatBody) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("text-end", "mb-2");
+
+            chatBody.appendChild(messageElement);
+            chatBody.scrollTop = chatBody.scrollHeight;
+          }
+
+          inputElem.value = "";
+          toggleSendButton();
+        }
+
+        
+
+       
+
+      const sendBtnElem = document.getElementById("send-button");
+      if (sendBtnElem) {
+        sendBtnElem.addEventListener("click", sendMessage);
+      }
+
+      function sendMsg() {
+         const AES_KEY = "$afitri&D1N1";
+         const senderId = document.getElementById("sender-id").value;
+         const receiverId = document.getElementById("receiver-id").value;
+         const inputElem = document.getElementById("chat-input1");
+        
+         const rawMessage = inputElem.value.trim();
+         if (!rawMessage) return;
+
+         const encryptedMessage = CryptoJS.AES.encrypt(rawMessage, AES_KEY).toString();
+         socket.emit("send_message", { sender_id: senderId, receiver_id: receiverId, message: encryptedMessage });
+
+         const chatContent = document.querySelector('#chatbox6 .chat-content.scroller');         
+
+       
+
+         inputElem.value = "";
+         toggleSendButton1();
+
+         // Optional: Kirim juga ke server via fetch
+         fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+               sender_id: senderId,
+               receiver_id: receiverId,
+               message: encryptedMessage
+            })
+         })
+         .then(res => res.json())
+         .then(data => {
+            if (data.reply) {
+               const reply = data.reply;
+               const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+               
+               chatContent.scrollTop = chatContent.scrollHeight;
+            }
+         });
+      }
+
+      const sendBtnElem1 = document.getElementById("sendBtn");
+      if (sendBtnElem1) {
+        sendBtnElem1.addEventListener("click", sendMsg);
+      }
+
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+         link.addEventListener('click', function() {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+         });
+      });
+      
+      
+
+      // ====================================
+      // 2. Menunggu DOM siap
+      // ====================================
+      document.addEventListener("DOMContentLoaded", function () {
+        // ------------------------------------
+        // 2.a. Data Teman & Render Status Online
+        // ------------------------------------
+        const friendList = {{ friend_list_data | tojson | default('[]') }};
+
+        function renderFriends(onlineIds) {
+          const container = document.querySelector(".media-height");
+          if (!container) return;
+          container.innerHTML = "";
+          friendList.forEach(f => {
+            const isOnline   = onlineIds.includes(f._id);
+            const dotClass   = isOnline ? "status-online" : "";
+            const statusText = isOnline ? "Online" : "Offline";
+            const profilePic = f.profile_picture;
+
+            const html = `
+              <div class="d-flex align-items-center mb-4"
+                   onclick="openChat('${f._id}', '${f.full_name}', '${profilePic}')">
+                <div class="iq-profile-avatar ${dotClass}">
+                  <img class="rounded-circle avatar-50"
+                       src="${profilePic}"
+                       alt="${f.full_name}" />
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-0">${f.full_name}</h6>
+                  <p class="mb-0">${statusText}</p>
+                </div>
+              </div>
+            `;
+            container.insertAdjacentHTML("beforeend", html);
+          });
+        }
+
+        // Render awal (semua dianggap offline)
+        renderFriends([]);
+
+
+
+       function renderFriend2(onlineIds) {
+         const container = document.getElementById("dm-list");
+         container.innerHTML = "";
+
+         friendList.forEach((f) => {
+            const isOnline   = onlineIds.includes(f._id);
+            const dotClass   = isOnline ? "status-online" : "";
+            const statusText = isOnline ? "Online" : "Offline";
+
+            const li = document.createElement("li");
+            li.classList.add("nav-item");
+            li.setAttribute("role", "presentation");
+
+            const a = document.createElement("a");
+            a.classList.add("nav-link");
+            a.href = "#";            // mencegah reload
+            a.onclick = (e) => openChat(e, f);
+
+            a.innerHTML = `
+               <div class="d-flex align-items-center">
+               <div class="avatar me-2">
+                  <img src="${f.profile_picture}" class="avatar-50" alt="${f.full_name}">
+                  <span class="avatar-status">
+                     <i class="ri-checkbox-blank-circle-fill"></i>
+                  </span>
+               </div>
+               <div class="chat-sidebar-name">
+                  <h6 class="mb-0">${f.full_name}</h6>
+                  <span>${statusText}</span>
+               </div>
+               </div>
+            `;
+
+            li.appendChild(a);
+            container.appendChild(li);
+         });
+         }
+
+      renderFriend2([]);
+
+     function openChat(e, user,data) {
+         if (e?.preventDefault) e.preventDefault();
+
+         selectedTargetUser = user._id;
+
+         document.querySelectorAll('#dm-list .nav-link')
+            .forEach(a => a.classList.remove('active'));
+         document.querySelectorAll('.tab-pane')
+            .forEach(p => p.classList.remove('show','active'));
+
+         e.currentTarget.classList.add('active');
+         const pane = document.getElementById('chatbox6');
+         pane.classList.add('show','active');
+
+         // Ganti nama & foto di header
+         document.getElementById('pane-profile-name').textContent = user.full_name;
+         const pic = document.getElementById('pane-profile-pic');
+         pic.src = user.profile_picture;
+         pic.onerror = () => pic.src = '/static/default.png';
+         
+
+         document.getElementById('receiver-id').value = user._id;
+
+         const content = pane.querySelector('.chat-content.scroller');
+         const AES_KEY = "$afitri&D1N1";
+        
+         content.innerHTML = `
+         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+            <img src="static/assets/images/page-img/page-load-loader.gif" alt="loader" style="height: 100px" />
+         </div>
+         `;
+
+
+         // Fetch riwayat chat
+         fetch(`/chat/history/${user._id}`)
+            .then(res => res.json())
+            .then(data => {
+               content.innerHTML = "";
+
+               if (data.length === 0) {
+                  content.innerHTML = "<p class='text-muted'>Belum ada percakapan</p>";
+                  return;
+               }
+               const currentUser = document.getElementById('sender-id').value;
+               const currentUserPic = document.getElementById('sender-pic').src; // Avatar user login
+               const chattingUserPic = user.profile_picture;
+
+               data.forEach(chat => {
+                  const isSender = chat.sender_id === currentUser;
+                  const avatar = isSender ? chat.sender_pic : chattingUserPic;
+                  const time = new Date(chat.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                  const decryptedMessage = chat.message
+                  const wrapper = document.createElement('div');
+                  wrapper.className = isSender ? "chat d-flex other-user" : "chat chat-left";
+
+                  const userDiv = document.createElement("div");
+                  userDiv.className = "chat-user";
+
+                  const avatarLink = document.createElement("a");
+                  avatarLink.className = "avatar m-0";
+
+                  const avatarImg = document.createElement("img");
+                  avatarImg.src = avatar;
+                  avatarImg.alt = "avatar";
+                  avatarImg.className = "avatar-35";
+                  avatarLink.appendChild(avatarImg);
+
+                  const timeSpan = document.createElement("span");
+                  timeSpan.className = "chat-time mt-1";
+                  timeSpan.textContent = time;
+
+                  userDiv.appendChild(avatarLink);
+                  userDiv.appendChild(timeSpan);
+
+
+                  const detailDiv = document.createElement("div");
+                  detailDiv.className = "chat-detail";
+
+                  const messageDiv = document.createElement("div");
+                  messageDiv.className = "chat-message";
+
+                  const p = document.createElement("p");
+                  p.textContent = decryptedMessage; 
+
+                  messageDiv.appendChild(p);
+                  detailDiv.appendChild(messageDiv);
+
+               
+                  wrapper.appendChild(userDiv);
+                  wrapper.appendChild(detailDiv);
+
+                  content.appendChild(wrapper);
+               });
+            })
+            .catch(err => {
+               content.innerHTML = "<p class='text-danger'>Gagal memuat chat.</p>";
+               console.error(err);
+            });
+      }
+     
+        
+        // ------------------------------------
+        // 2.b. Inisialisasi Socket.IO
+        // ------------------------------------
+        socket = io({
+          auth: {
+            user_id:   "{{ session.get('user_id') }}",
+            full_name: "{{ session.get('full_name') }}"
+          }
+        });
+
+        socket.on("connect", () => {
+          socket.emit("request_online_users");
+        });
+
+        
+        socket.on("online_users", users => {
+          let selectedTargetUser = null;
+          const onlineIds = users.map(u => u.user_id);
+          renderFriends(onlineIds);
+          renderFriend2(onlineIds);
+
+          if (selectedTargetUser && !onlineIds.includes(selectedTargetUser)) {
+            selectedTargetUser = null;
+          }
+        });
+        socket.on("user_connected",    () => socket.emit("request_online_users"));
+        socket.on("user_disconnected", () => socket.emit("request_online_users"));
+
+        socket.on("incoming_call", async (data) => {
+         console.log("📞 Incoming call from:", data.from);
+         incomingCallData = { fromUser: data.from, offer: data.offer };
+         console.log("➡️ Show #callOverlay");
+
+
+         const overlay = document.getElementById("callOverlay");
+         overlay.classList.remove("hidden");
+         overlay.classList.add("visible");
+
+         document.getElementById("incomingCallBox").style.display = "block";
+         document.getElementById("callerNameIncoming").innerText = `${data.from} menelpon Anda`;
+      });
+      socket.on("mic-toggle", (data) => {
+         const isMuted = !data.micOn;
+         const badge = document.getElementById("micMutedBadgeRemote");
+         if (badge) {
+            badge.classList.toggle("d-none", !isMuted);
+         }
+      });
+
+
+
+         socket.on("answer", async (data) => {
+            await peerConnection.setRemoteDescription(
+               new RTCSessionDescription(data.answer)
+            );
+            remoteDescSet = true;
+
+            for (let candidate of queuedCandidates) {
+               await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            queuedCandidates = [];
+
+            document.getElementById("callingStatus").classList.add("d-none");
+            document.getElementById("remoteVideo").classList.remove("d-none");
+            document.getElementById("callControls").classList.remove("d-none");
+
+            showControlsTemporarily();
+         });
+
+         socket.on("ice-candidate", async (data) => {
+         if (!remoteDescSet) {
+            queuedCandidates.push(data.candidate);
+         } else if (peerConnection) {
+            try {
+               await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            } catch (err) {
+               console.error("❌ Failed to add ICE candidate:", err);
+            }
+         }
+         });
+
+        // ------------------------------------
+        // 2.c. Fetch Notifikasi → Render
+        // ------------------------------------
+        fetch("/notifications")
+          .then(response => {
+            if (!response.ok) {
+              return response.text().then(text => {
+                console.error("Response bukan JSON:", text);
+                throw new Error("Gagal memuat notifikasi");
+              });
+            }
+            return response.json();
+          })
+          .then(notifArray => {
+            const badge      = document.getElementById("notif-badge");
+            const countLabel = document.getElementById("notif-count");
+            const notifList  = document.getElementById("notif-list");
+            if (!badge || !countLabel || !notifList) return;
+
+            let unreadCount = notifArray.filter(n => n.is_read === false).length;
+            if (unreadCount > 0) {
+              badge.textContent   = unreadCount;
+              badge.style.display = "inline-block";
+            }
+            countLabel.textContent = notifArray.length;
+
+            notifArray.forEach(n => {
+              const a = document.createElement("a");
+              a.href = `/post/${n.post_id}`;
+              a.className = "iq-sub-card d-block";
+
+              const unreadDot = (!n.is_read)
+                ? `<span class="bg-primary rounded-circle"
+                          style="width:8px; height:8px; display:inline-block; margin-left:5px;"></span>`
+                : "";
+
+              a.innerHTML = `
+                <div class="d-flex align-items-center">
+                  <img src="${n.profile_picture}" alt="avatar" class="avatar-40 rounded-circle" />
+                  <div class="ms-3 w-100">
+                    <h6 class="mb-0">${n.full_name} ${unreadDot}</h6>
+                    <p class="mb-0 text-truncate">
+                      ${n.type === "tag"
+                        ? "Menandai Anda Dalam Postingan"
+                        : "Menyukai postingan Anda pada"}
+                    </p>
+                    <small class="float-right font-size-12 text-muted">${n.time}</small>
+                  </div>
+                </div>`;
+              notifList.appendChild(a);
+            });
+          })
+          .catch(err => console.error("Fetch notifikasi gagal:", err));
+
+        socket.on("notify", data => {
+          const badge      = document.getElementById("notif-badge");
+          const countLabel = document.getElementById("notif-count");
+          const notifList  = document.getElementById("notif-list");
+          if (!badge || !countLabel || !notifList) return;
+
+          let currentBadge = parseInt(badge.textContent || "0", 10) + 1;
+          let currentCount = parseInt(countLabel.textContent || "0", 10) + 1;
+          badge.textContent   = currentBadge;
+          badge.style.display = "inline-block";
+          countLabel.textContent = currentCount;
+
+          const a = document.createElement("a");
+          a.href = `/post/${data.post_id}`;
+          a.className = "iq-sub-card d-block";
+          a.innerHTML = `
+            <div class="d-flex align-items-center">
+              <img src="${data.profile_picture || '/static/default.png'}"
+                   alt="avatar"
+                   class="avatar-40 rounded-circle" />
+              <div class="ms-3 w-100">
+                <h6 class="mb-0">${data.full_name}
+                  <span class="bg-primary rounded-circle"
+                        style="width:8px;height:8px;display:inline-block;margin-left:5px;"></span>
+                </h6>
+                <p class="mb-0 text-truncate">
+                  ${data.type === "tag"
+                    ? "Menandai Anda Dalam Postingan"
+                    : "Menyukai postingan Anda pada"}
+                </p>
+                <small class="float-right font-size-12 text-muted">${data.time || "Baru saja"}</small>
+              </div>
+            </div>`;
+          notifList.prepend(a);
+        });
+       
+
+        // ------------------------------------
+        // 2.e. Listener: Menerima Pesan Baru via Socket.IO
+        // ------------------------------------
+     socket.on("new_message", data => {
+      const AES_KEY = "$afitri&D1N1";
+      let decryptedMessage;
+
+      try {
+         const bytes = CryptoJS.AES.decrypt(data.message, AES_KEY);
+         decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
+      } catch (err) {
+         console.error("❌ Gagal dekripsi pesan:", err);
+         decryptedMessage = "❗Pesan terenkripsi (gagal dekripsi)";
+      }
+
+      function emojiOnly(text) {
+         return /^\p{Extended_Pictographic}+$/u.test(text.trim());
+      }
+
+      const myId = document.getElementById("sender-id")?.value;
+      const currentReceiver = document.getElementById("receiver-id")?.value;
+      const isOwnMessage = (data.sender_id === myId);
+
+      if (!isOwnMessage && data.sender_id !== currentReceiver) {
+         openChat(data.sender_id, data.full_name, data.profile_picture);
+      }
+
+      const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const avatar = data.profile_picture;
+
+      const chatSelectors = [
+         "#chat-box .flex-grow-1",
+         "#chatbox6 .chat-content.scroller"
+      ];
+
+      chatSelectors.forEach(selector => {
+         const chatBody = document.querySelector(selector);
+         if (!chatBody) return;
+
+         let wrapper;
+
+        // 👇 Untuk #chat-box (popup)
+         if (selector === "#chat-box .flex-grow-1") {
+            wrapper = document.createElement("div");
+            wrapper.classList.add("d-flex", "mb-2",
+               isOwnMessage ? "justify-content-end" : "justify-content-start"
+            );
+
+            // Avatar (hanya jika bukan pesan sendiri)
+            if (!isOwnMessage) {
+               const img = document.createElement("img");
+               img.src = avatar;
+               img.className = "rounded-circle me-2";
+               img.width = 32;
+               img.height = 32;
+               img.style.marginTop = "10px";
+               img.alt = data.full_name;
+               wrapper.appendChild(img);
+            }
+
+            const bubble = document.createElement(isOwnMessage ? "div" : "span");
+            bubble.className = "badge bg-primary text-wrap";
+            bubble.style.padding = "12px 20px";
+            bubble.style.borderRadius = "20px";
+            bubble.style.maxWidth = "70%";
+            bubble.style.fontSize = "14px";
+            bubble.textContent = decryptedMessage; // ✅ aman, tidak akan render HTML
+
+            wrapper.appendChild(bubble);
+         }
+
+         // 👇 Untuk chat-content.scroller
+         else {
+            wrapper = document.createElement("div");
+            wrapper.className = isOwnMessage ? "chat d-flex other-user" : "chat chat-left";
+
+            // 🧩 Chat User (avatar dan waktu)
+            const userDiv = document.createElement("div");
+            userDiv.className = "chat-user";
+
+            const avatarLink = document.createElement("a");
+            avatarLink.className = "avatar m-0";
+
+            const avatarImg = document.createElement("img");
+            avatarImg.src = avatar;
+            avatarImg.alt = "avatar";
+            avatarImg.className = "avatar-35";
+
+            avatarLink.appendChild(avatarImg);
+            userDiv.appendChild(avatarLink);
+
+            const timeSpan = document.createElement("span");
+            timeSpan.className = "chat-time mt-1";
+            timeSpan.textContent = timeNow;
+            userDiv.appendChild(timeSpan);
+
+            // 🧩 Chat Detail (bubble)
+            const detailDiv = document.createElement("div");
+            detailDiv.className = "chat-detail";
+
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "chat-message";
+
+            const p = document.createElement("p");
+            p.textContent = decryptedMessage; // ✅ aman dari <h1>, <img>, XSS dll
+
+            messageDiv.appendChild(p);
+            detailDiv.appendChild(messageDiv);
+
+            wrapper.appendChild(userDiv);
+            wrapper.appendChild(detailDiv);
+         }
+
+
+
+         chatBody.appendChild(wrapper);
+         chatBody.scrollTop = chatBody.scrollHeight;
+      });
+   });
+
+
+        // ------------------------------------
+        // 2.f. Fungsi: openChat → Tampilkan Popup & Load History
+        // ------------------------------------
+        window.openChat = function (userId, fullName = "", profilePic = "") {
+          const chatBox = document.getElementById("chat-box");
+          if (!chatBox) return;
+          chatBox.style.display = "flex";
+          chatBox.classList.remove("chat-pop");
+          void chatBox.offsetWidth; // trigger reflow
+          chatBox.classList.add("chat-pop");
+
+          // Set receiver-id
+         const receiverInput = document.getElementById("receiver-id");
+          if (receiverInput) receiverInput.value = userId;
+
+            ["chat-profile-name", "chat-profile-name1"].forEach(id => {
+              const el = document.getElementById(id);
+              if (el && fullName) el.textContent = fullName;
+            });
+            ["chat-profile-picture", "chat-profile-picture1"].forEach(id => {
+              const img = document.getElementById(id);
+              if (img && profilePic) {
+                img.src = profilePic;
+                img.onerror = () => { img.src = "/static/default.png"; };
+              }
+          });
+
+
+        };
+        
+
+        // ------------------------------------
+        // 2.g. Fungsi: closeChat → Sembunyikan Popup
+        // ------------------------------------
+        window.closeChat = function () {
+          const chatBox = document.getElementById("chat-box");
+          if (!chatBox) return;
+          chatBox.style.display = "none";
+          chatBox.classList.remove("chat-pop");
+        };
+
+
+
+        // ------------------------------------
+        // 2.h. Emoji Picker Setup
+        // ------------------------------------
+         const emojiBtn1 = document.getElementById('emoji-btn1');
+         const emojiIcon1 = document.getElementById('emoji-icon1');
+         const picker1 = document.getElementById('emoji-picker1');
+         const chatInputElem1 = document.getElementById('chat-input1');
+
+         const emojiBtn = document.getElementById('emoji-btn');
+         const emojiIcon = document.getElementById('emoji-icon');
+         const picker = document.getElementById('emoji-picker');
+         const chatInputElem = document.getElementById('chat-input');
+
+         function togglePicker(picker, icon) {
+            const isOpen = picker.style.display === "block";
+            picker.style.display = isOpen ? "none" : "block";
+
+            icon.classList.toggle("text-primary", !isOpen);
+            icon.classList.toggle("text-secondary", isOpen);
+         }
+
+
+         if (emojiBtn1 && picker1){
+            emojiBtn1.addEventListener("click", (e) => {
+               e.preventDefault();
+               togglePicker(picker1,emojiIcon1);
+            });
+         }
+
+         if (emojiBtn && picker){
+            emojiBtn.addEventListener("click", (e) => {
+               e.preventDefault();
+               tooglePicker(picker,emojiIcon);
+            });
+         }
+
+         if (emojiBtn1 && chatInputElem1) {
+            picker1.addEventListener("emoji-click",(event) => {
+               chatInputElem1.value += event.detail.unicode;
+               chatInputElem1.focus();
+               toggleSendButton1();
+
+            });
+         }
+         if (emojiBtn && chatInputElem) {
+            picker.addEventListener("emoji-click",(event) => {
+               chatInputElem.value += event.detail.unicode;
+               chatInputElem.focus();
+               toggleSendButton();
+
+            });
+         }
+
+         document.addEventListener("click", (e) => {
+         if (picker1 && emojiBtn1) {
+            const clickOutside1 = !picker1.contains(e.target) && !emojiBtn1.contains(e.target);
+            if (clickOutside1) {
+               picker1.style.display = "none";
+               emojiIcon1?.classList.remove("text-primary");
+               emojiIcon1?.classList.add("text-secondary");
+            }
+         }
+
+         if (picker && emojiBtn) {
+            const clickOutside = !picker.contains(e.target) && !emojiBtn.contains(e.target);
+            if (clickOutside) {
+               picker.style.display = "none";
+               emojiIcon?.classList.remove("text-primary");
+               emojiIcon?.classList.add("text-secondary");
+            }
+         }
+         });
+
+        // ------------------------------------
+        // 2.i. GIF Search dengan GIPHY
+        // ------------------------------------
+        const gifBtn         = document.getElementById("gif-toggle-btn");
+        const gifContainer   = document.getElementById("gif-container");
+        const gifSearchInput = document.getElementById("gif-search");
+        const gifResults     = document.getElementById("gif-results");
+        const senderIdGlobal = document.getElementById("sender-id")?.value;
+
+        if (gifBtn && gifContainer) {
+          gifBtn.addEventListener("click", () => {
+            gifContainer.style.display = (gifContainer.style.display === "none") ? "block" : "none";
+          });
+        }
+
+        if (gifSearchInput && gifResults) {
+          gifSearchInput.addEventListener("input", async () => {
+            const query = gifSearchInput.value.trim();
+            if (!query) {
+              gifResults.innerHTML = "";
+              return;
+            }
+            try {
+              const API_KEY = "HST1JijGbqLRqfdi2yT0NN98QIErIZjS";
+              const response = await fetch(
+                `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${encodeURIComponent(query)}&limit=10`
+              );
+              const data = await response.json();
+              gifResults.innerHTML = "";
+
+              data.data.forEach(gif => {
+                const imgUrl = gif.images.fixed_height.url;
+                const imgEl  = document.createElement("img");
+                imgEl.src    = imgUrl;
+                imgEl.style.cursor = "pointer";
+                imgEl.classList.add("m-1");
+                imgEl.width  = 100;
+                imgEl.height = 100;
+
+                imgEl.addEventListener("click", () => {
+                  const AES_KEY = "$afitri&D1N1";
+                  const receiverIdElem = document.getElementById("receiver-id");
+                  if (!receiverIdElem) return;
+                  const receiverId = receiverIdElem.value;
+                  if (!receiverId) {
+                    return alert("Pilih dulu teman yang ingin diajak chat!");
+                  }
+
+                  const rawGifMessage       = `<img src="${imgUrl}" alt="gif" class="chat-bubble gif-message">`;
+                  const encryptedGifMessage = CryptoJS.AES.encrypt(rawGifMessage, AES_KEY).toString();
+
+                  socket.emit("send_message", {
+                    sender_id:   senderIdGlobal,
+                    receiver_id: receiverId,
+                    message:     encryptedGifMessage
+                  });
+
+                  // Tutup GIF container
+                  gifContainer.style.display = "none";
+                });
+
+                gifResults.appendChild(imgEl);
+              });
+            } catch (error) {
+              console.error("❌ Error fetch GIF:", error);
+            }
+          });
+        }
+
+        // ------------------------------------
+        // 2.j. Tombol Like (Emoji “👍”)
+        // ------------------------------------
+        const likeBtnElem = document.getElementById("like-button");
+        if (likeBtnElem) {
+          likeBtnElem.addEventListener("click", () => {
+            const AES_KEY     = "$afitri&D1N1";
+            const senderId    = document.getElementById("sender-id")?.value;
+            const receiverId  = document.getElementById("receiver-id")?.value;
+            if (!senderId || !receiverId) {
+              return alert("Pilih dulu teman yang ingin diajak chat!");
+            }
+            const likeEmoji     = "👍";
+            const encryptedLike = CryptoJS.AES.encrypt(likeEmoji, AES_KEY).toString();
+
+            socket.emit("send_message", {
+              sender_id:   senderId,
+              receiver_id: receiverId,
+              message:     encryptedLike
+            });
+          });
+        }
+
+        // ------------------------------------
+        // 2.k. Preview Upload Gambar di Chat
+        // ------------------------------------
+        const fileInput = document.getElementById("photo-upload");
+        const previewContainer = document.getElementById("image-preview-container");
+        const previewImage = document.getElementById("image-preview");
+
+        fileInput.addEventListener("change", function () {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.addEventListener("load", function () {
+              previewImage.src = reader.result;
+              previewImage.style.display = "block";
+              previewContainer.style.display = "flex";
+            });
+            reader.readAsDataURL(file);
+          } else {
+            previewContainer.style.display = "none";
+          }
+        });
+
+        window.removeImage = function () {
+          fileInput.value = "";
+          previewImage.src = "";
+          previewImage.style.display = "none";
+          previewContainer.style.display = "none";
+        };
+
+        
+
+        // ------------------------------------
+        // 2.l. Penutup DOMContentLoaded
+        // ------------------------------------
+      }); // <-- End of DOMContentLoaded listener
+
+      
+    
+       
+    </script>
+  </body>
+</html>
